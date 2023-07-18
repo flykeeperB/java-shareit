@@ -8,11 +8,11 @@ import java.util.Objects;
 public abstract class AbstractModel {
     protected Long id;
 
-    public AbstractModel (AbstractModel source) {
+    public AbstractModel(AbstractModel source) {
         this.id = source.getId();
     }
 
-    public AbstractModel(){
+    public AbstractModel() {
 
     }
 
