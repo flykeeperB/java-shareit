@@ -24,7 +24,7 @@ public class UserRepositoryImpl
     protected void validateToSave(User user) {
         super.validateToSave(user);
         if (usersByEmail.containsKey(user.getEmail())) {
-            if (usersByEmail.get(user.getEmail()).getId() != user.getId()) {
+            if (!usersByEmail.get(user.getEmail()).getId().equals(user.getId())) {
                 throw new AlreadyExistException("Пользователь с таким e-mail уже имеется");
             }
         }
