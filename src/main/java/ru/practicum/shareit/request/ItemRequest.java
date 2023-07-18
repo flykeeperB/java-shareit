@@ -14,7 +14,7 @@ public class ItemRequest extends AbstractModel {
     private User requestor;
     private User created;
 
-    public ItemRequest (ItemRequest source) {
+    public ItemRequest(ItemRequest source) {
         super(source);
 
         this.description = source.getDescription();
