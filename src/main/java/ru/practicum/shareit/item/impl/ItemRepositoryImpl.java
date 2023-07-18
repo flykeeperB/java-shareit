@@ -57,7 +57,7 @@ public class ItemRepositoryImpl
 
     @Override
     public List<Item> retrieveForOwner(Long userId) {
-        List<Long> ids = itemsByOwner.getOrDefault(userId, new HashSet<>()).stream().toList();
+        List<Long> ids = new ArrayList<>(itemsByOwner.getOrDefault(userId, new HashSet<>()));
 
         return retrieve(ids);
     }
