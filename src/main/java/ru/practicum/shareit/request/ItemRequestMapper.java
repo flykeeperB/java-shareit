@@ -13,7 +13,7 @@ public class ItemRequestMapper
         extends AbstractMapper<ItemRequest, ItemRequestDto>
         implements Mapper<ItemRequest, ItemRequestDto> {
 
-    UserMapper userMapper;
+    private final UserMapper userMapper;
 
     @Override
     public ItemRequestDto toDto(ItemRequest source) {

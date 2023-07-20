@@ -18,17 +18,21 @@ public class ItemServiceImpl
 
     @Autowired
     public ItemServiceImpl(ItemRepository repository) {
-        super(repository);
+        super(repository, "Items");
         this.repository = repository;
     }
 
     @Override
     public List<Item> retrieveForOwner(Long userId) {
+        logInfo("получение записей о вещах по идентификатору владельца");
+
         return repository.retrieveForOwner(userId);
     }
 
     @Override
-    public List<Item> retrieveForSearchText(String searchText) {
+    public List<Item> retrieveAvailableForSearchText(String searchText) {
+        logInfo("поиск доступных для аренды вещей по тексту в наименовании или описании");
+
         return repository.retrieveForSearchText(searchText);
     }
 }

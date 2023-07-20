@@ -9,6 +9,6 @@ public interface ItemService extends Service<Item> {
 
     List<Item> retrieveForOwner(Long userId);
 
-    List<Item> retrieveForSearchText(String searchText);
+    List<Item> retrieveAvailableForSearchText(String searchText);
 
 }

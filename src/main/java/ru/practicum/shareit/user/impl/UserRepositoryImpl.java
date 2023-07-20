@@ -17,7 +17,7 @@ public class UserRepositoryImpl
     private final Map<String, User> usersByEmail = new HashMap<>();
 
     public UserRepositoryImpl() {
-        super("Пользователи");
+        super("Users");
     }
 
     @Override

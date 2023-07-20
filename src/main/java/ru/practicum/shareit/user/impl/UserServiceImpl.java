@@ -12,7 +12,7 @@ public class UserServiceImpl
         implements UserService {
 
     public UserServiceImpl(UserRepository repository) {
-        super(repository);
+        super(repository, "Users");
     }
 
 }

@@ -32,7 +32,7 @@ public class ItemControllerImpl extends AbstractController<ItemDto, Item> {
                               ItemMapper mapper,
                               UserService userService,
                               UserMapper userMapper) {
-        super(service, mapper);
+        super(service, mapper, "Items");
         this.service = service;
         this.mapper = mapper;
         this.userService = userService;
@@ -75,17 +75,21 @@ public class ItemControllerImpl extends AbstractController<ItemDto, Item> {
 
     @GetMapping
     public List<ItemDto> retrieveForOwner(@RequestHeader("X-Sharer-User-Id") Optional<Long> userId) {
+        logInfo("получение записи о вещах по владельцу");
+
         validateUserId(userId);
 
         return mapper.toDto(service.retrieveForOwner(userId.get()));
     }
 
     @GetMapping("/search")
-    public List<ItemDto> retrieveForOwner(@RequestParam String text,
-                                          @RequestHeader("X-Sharer-User-Id") Optional<Long> userId) {
+    public List<ItemDto> retrieveAvailableForText(@RequestParam String text,
+                                                  @RequestHeader("X-Sharer-User-Id") Optional<Long> userId) {
+        logInfo("поиск вещей по тексту в наименовании или описании");
+
         validateUserId(userId);
 
-        return mapper.toDto(service.retrieveForSearchText(text));
+        return mapper.toDto(service.retrieveAvailableForSearchText(text));
     }
 
     @PatchMapping("/{itemId}")

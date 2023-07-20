@@ -15,7 +15,7 @@ public class ItemRepositoryImpl
     private final Map<Long, Set<Long>> itemsByOwner = new HashMap<>();
 
     public ItemRepositoryImpl() {
-        super("Вещи");
+        super("Items");
     }
 
     @Override
@@ -57,6 +57,8 @@ public class ItemRepositoryImpl
 
     @Override
     public List<Item> retrieveForOwner(Long userId) {
+        logInfo("получение записей о вещах по идентификатору владельца");
+
         List<Long> ids = new ArrayList<>(itemsByOwner.getOrDefault(userId, new HashSet<>()));
 
         return retrieve(ids);
@@ -64,6 +66,8 @@ public class ItemRepositoryImpl
 
     @Override
     public List<Item> retrieveForSearchText(String searchText) {
+        logInfo("поиск доступных для аренды вещей по тексту в наименовании или описании");
+
         List<Item> result = new ArrayList<>();
 
         if (searchText.isEmpty()) {

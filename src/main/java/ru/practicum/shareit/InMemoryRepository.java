@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RequiredArgsConstructor
 public abstract class InMemoryRepository<T extends AbstractModel>
         implements Repository<T> {
@@ -20,7 +23,12 @@ public abstract class InMemoryRepository<T extends AbstractModel>
     protected Map<Long, T> storage = new HashMap<>();
     protected Long lastId = 0L;
 
+    protected void logInfo(String message) {
+        log.info("Repository (" + name + "): " + message);
+    }
+
     private Long generateId() {
+        logInfo("генерация идентификатора");
         return ++lastId;
     }
 
@@ -43,6 +51,8 @@ public abstract class InMemoryRepository<T extends AbstractModel>
 
     @Override
     public T create(T source) {
+        logInfo("создание записи");
+
         validateToSave(source);
         source.setId(generateId());
 
@@ -52,6 +62,8 @@ public abstract class InMemoryRepository<T extends AbstractModel>
 
     @Override
     public T retrieve(Long id) {
+        logInfo("получение записи по идентификатору");
+
         validateId(id);
 
         return storage.get(id);
@@ -59,11 +71,15 @@ public abstract class InMemoryRepository<T extends AbstractModel>
 
     @Override
     public List<T> retrieve() {
+        logInfo("получение всех записей");
+
         return new ArrayList<>(storage.values());
     }
 
     @Override
     public List<T> retrieve(List<Long> ids) {
+        logInfo("получение записи по идентификатору");
+
         List<T> result = new ArrayList<>();
 
         ids.forEach(id -> result.add(retrieve(id)));
@@ -78,6 +94,8 @@ public abstract class InMemoryRepository<T extends AbstractModel>
 
     @Override
     public T update(T source) {
+        logInfo("изменение записи");
+
         validateId(source.getId());
 
         T target = patch(source, retrieve(source.getId()));
@@ -90,6 +108,8 @@ public abstract class InMemoryRepository<T extends AbstractModel>
 
     @Override
     public void delete(Long id) {
+        logInfo("удаление записи");
+
         validateId(id);
 
         storage.remove(id);

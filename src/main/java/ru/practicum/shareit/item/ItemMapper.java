@@ -15,8 +15,8 @@ public class ItemMapper
         extends AbstractMapper<Item, ItemDto>
         implements Mapper<Item, ItemDto> {
 
-    UserMapper userMapper;
-    ItemRequestMapper itemRequestMapper;
+    private final UserMapper userMapper;
+    private final ItemRequestMapper itemRequestMapper;
 
     @Override
     public ItemDto toDto(Item source) {

@@ -2,7 +2,7 @@ package ru.practicum.shareit;
 
 import java.util.List;
 
-public interface CRUD<T> {
+public interface Crud<T> {
 
     T create(T source);
 

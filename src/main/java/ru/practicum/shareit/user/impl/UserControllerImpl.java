@@ -18,7 +18,7 @@ public class UserControllerImpl extends AbstractController<UserDto, User> {
 
     @Autowired
     public UserControllerImpl(UserService service, UserMapper mapper) {
-        super(service, mapper);
+        super(service, mapper, "Users");
     }
 
     @PostMapping
