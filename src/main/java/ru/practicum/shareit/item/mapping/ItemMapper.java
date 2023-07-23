@@ -6,7 +6,6 @@ import ru.practicum.shareit.AbstractMapper;
 import ru.practicum.shareit.Mapper;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.request.ItemRequestMapper;
 import ru.practicum.shareit.user.UserMapper;
 
 import java.util.ArrayList;
@@ -18,7 +17,6 @@ public class ItemMapper
         implements Mapper<Item, ItemDto> {
 
     private final UserMapper userMapper;
-    // private final ItemRequestMapper itemRequestMapper;
     private final CommentMapper commentMapper;
 
     @Override
