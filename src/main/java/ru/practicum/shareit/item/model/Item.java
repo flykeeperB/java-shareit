@@ -38,21 +38,4 @@ public class Item extends AbstractModel {
 
     @Transient
     private List<Comment> comments;
-
-    /*
-    TODO itemRequest
-    */
-    /*
-    TODO transactions
-    */
-    //private ItemRequest itemRequest;
-
-    /*public Item(Item source) {
-        super(source);
-        this.description = source.getDescription();
-        this.name = source.getName();
-        //this.itemRequest = source.getItemRequest();
-        this.owner = source.getOwner();
-        this.available = source.getAvailable();
-    }*/
 }

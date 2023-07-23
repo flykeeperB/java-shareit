@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public interface BookingService extends Service<Booking, BookingValidator> {
+public interface BookingService extends Service<Booking> {
 
     Booking approve(Long id, Optional<Long> userId, Boolean isApproved);
 

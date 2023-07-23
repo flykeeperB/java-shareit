@@ -3,6 +3,8 @@ package ru.practicum.shareit.item.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.AbstractService;
 import ru.practicum.shareit.booking.BookingService;
 import ru.practicum.shareit.booking.TypesOfBookingConnectionToItem;
@@ -93,6 +95,7 @@ public class ItemServiceImpl
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED)
     public Item create(Item source, Optional<Long> userId) {
         validator.validateUserId(userId);
 
@@ -102,6 +105,7 @@ public class ItemServiceImpl
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED)
     public Item update(Item source, Optional<Long> userId) {
         logInfo("обновление записи");
 
@@ -119,6 +123,7 @@ public class ItemServiceImpl
     }
 
     @Override
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     public Item retrieve(Long id, Optional<Long> userId) {
         Item result = super.retrieve(id, userId);
 
@@ -129,6 +134,7 @@ public class ItemServiceImpl
     }
 
     @Override
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     public List<Item> retrieveForOwner(Optional<Long> userId) {
         logInfo("получение записей о вещах по идентификатору владельца");
 
@@ -142,6 +148,7 @@ public class ItemServiceImpl
     }
 
     @Override
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     public List<Item> retrieveAvailableForSearchText(String searchText, Optional<Long> userId) {
         logInfo("поиск доступных для аренды вещей по тексту в наименовании или описании");
 
@@ -155,6 +162,7 @@ public class ItemServiceImpl
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED)
     public Comment createComment(Comment source, Long itemId, Optional<Long> userId) {
         logInfo("добавление комментария");
 

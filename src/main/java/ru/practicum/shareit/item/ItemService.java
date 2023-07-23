@@ -7,7 +7,7 @@ import ru.practicum.shareit.item.model.Item;
 import java.util.List;
 import java.util.Optional;
 
-public interface ItemService extends Service<Item, ItemValidator> {
+public interface ItemService extends Service<Item> {
 
     List<Item> retrieveForOwner(Optional<Long> userId);
 

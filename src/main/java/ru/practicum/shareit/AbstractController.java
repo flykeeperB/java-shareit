@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public abstract class AbstractController<T extends AbstractDto, E extends AbstractModel> implements Controller<T> {
 
-    private final Service<E, ?> service;
+    private final Service<E> service;
     private final Mapper<E, T> mapper;
 
     protected void logInfo(String message) {
@@ -64,7 +64,7 @@ public abstract class AbstractController<T extends AbstractDto, E extends Abstra
         service.delete(id, userId);
     }
 
-    public Service<E, ?> getService() {
+    public Service<E> getService() {
         return service;
     }
 

@@ -6,12 +6,14 @@ import java.util.List;
 import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.NotFoundException;
 
 @Slf4j
 @RequiredArgsConstructor
 public abstract class AbstractService<T extends AbstractModel, V extends Validator<T>>
-        implements Service<T, V> {
+        implements Service<T> {
 
     private final ShareItRepository<T> repository;
 
@@ -22,6 +24,7 @@ public abstract class AbstractService<T extends AbstractModel, V extends Validat
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED)
     public T create(T source, Optional<Long> userId) {
         logInfo("создание записи");
 
@@ -31,6 +34,7 @@ public abstract class AbstractService<T extends AbstractModel, V extends Validat
     }
 
     @Override
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     public T retrieve(Long id, Optional<Long> userId) {
         logInfo("получение записи по идентификатору");
 
@@ -45,6 +49,7 @@ public abstract class AbstractService<T extends AbstractModel, V extends Validat
     }
 
     @Override
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     public List<T> retrieve(Optional<Long> userId) {
         logInfo("получение записей");
 
@@ -54,6 +59,7 @@ public abstract class AbstractService<T extends AbstractModel, V extends Validat
     }
 
     @Override
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     public List<T> retrieve(List<Long> ids, Optional<Long> userId) {
         logInfo("получение записей по набору идентификаторов");
 
@@ -69,6 +75,7 @@ public abstract class AbstractService<T extends AbstractModel, V extends Validat
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED)
     public T update(T source, Optional<Long> userId) {
         logInfo("обновление записи");
 
@@ -80,6 +87,7 @@ public abstract class AbstractService<T extends AbstractModel, V extends Validat
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED)
     public void delete(Long id, Optional<Long> userId) {
         logInfo("удаление записи");
 

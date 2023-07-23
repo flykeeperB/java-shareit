@@ -3,6 +3,8 @@ package ru.practicum.shareit.booking.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.AbstractService;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.BookingService;
@@ -11,7 +13,6 @@ import ru.practicum.shareit.booking.TypesOfBookingConnectionToItem;
 import ru.practicum.shareit.booking.dto.State;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
-import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.user.UserService;
 
 import java.time.LocalDateTime;
@@ -24,21 +25,19 @@ public class BookingServiceImpl
 
     private final BookingRepository repository;
     private final UserService userService;
-    //private final ItemService itemService;
 
     @Autowired
     @Lazy
     public BookingServiceImpl(BookingRepository repository,
                               BookingValidator validator,
-                              UserService userService,
-                              ItemService itemService) {
+                              UserService userService) {
         super(repository, validator);
         this.repository = repository;
         this.userService = userService;
-        //this.itemService = itemService;
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED)
     public Booking create(Booking source, Optional<Long> userId) {
         this.validator.validateUserId(userId);
 
@@ -48,6 +47,7 @@ public class BookingServiceImpl
         return super.create(source, userId);
     }
 
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     public List<Booking> retrieveForBooker(Optional<Long> userId, State state) {
         logInfo("получение сведений о бронированиях для отдельного пользователя");
 
@@ -91,6 +91,7 @@ public class BookingServiceImpl
     }
 
     @Override
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     public List<Booking> retrieveForItemsOwner(Optional<Long> userId, State state) {
         logInfo("получение сведений о бронированиях для отдельного владельца вещей");
 
@@ -134,6 +135,7 @@ public class BookingServiceImpl
     }
 
     @Override
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     public Map<TypesOfBookingConnectionToItem, Booking> retrieveForItem(Long itemId) {
         Map<TypesOfBookingConnectionToItem, Booking> result = new HashMap<>();
         LocalDateTime nowTime = LocalDateTime.now();
@@ -159,16 +161,19 @@ public class BookingServiceImpl
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED)
     public Booking update(Booking source, Optional<Long> userId) {
         return super.update(source, userId);
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED)
     public void delete(Long id, Optional<Long> userId) {
         super.delete(id, userId);
     }
 
     @Override
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     public Booking retrieve(Long id, Optional<Long> userId) {
         Booking result = super.retrieve(id, userId);
 
@@ -178,6 +183,7 @@ public class BookingServiceImpl
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED)
     public Booking approve(Long id, Optional<Long> userId, Boolean isApproved) {
         logInfo("подтверждение/отмена бронирования");
 
@@ -195,12 +201,13 @@ public class BookingServiceImpl
     }
 
     @Override
-    public String getName() {
-        return "Booking";
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
+    public List<Booking> retrieveComplitedForBooker(Optional<Long> userId, State state) {
+        return null;
     }
 
     @Override
-    public List<Booking> retrieveComplitedForBooker(Optional<Long> userId, State state) {
-        return null;
+    public String getName() {
+        return "Booking";
     }
 }
