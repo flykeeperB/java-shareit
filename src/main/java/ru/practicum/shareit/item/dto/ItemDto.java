@@ -1,19 +1,23 @@
 package ru.practicum.shareit.item.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import ru.practicum.shareit.AbstractDto;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
-@Builder
+@EqualsAndHashCode(callSuper = true)
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class ItemDto extends AbstractDto {
+
     @NotBlank(message = "Не определено наименование")
     private String name;
 
@@ -24,5 +28,8 @@ public class ItemDto extends AbstractDto {
     private Boolean available;
 
     private UserDto owner;
-    private ItemRequestDto itemRequestDto;
+    private ItemRequestDto itemRequest;
+
+    private List<CommentDto> comments;
+
 }

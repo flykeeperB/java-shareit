@@ -3,59 +3,92 @@ package ru.practicum.shareit;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
+import ru.practicum.shareit.exception.NotFoundException;
 
 @Slf4j
 @RequiredArgsConstructor
-public abstract class AbstractService<T extends AbstractModel>
-        implements Service<T> {
+public abstract class AbstractService<T extends AbstractModel, V extends Validator<T>>
+        implements Service<T, V> {
 
-    private final Repository<T> repository;
+    private final ShareItRepository<T> repository;
 
-    protected final String name;
+    protected final V validator;
 
     protected void logInfo(String message) {
-        log.info("Service (" + name + "): " + message);
+        log.info("Service (" + this.getName() + "): " + message);
     }
 
     @Override
-    public T create(T source) {
+    public T create(T source, Optional<Long> userId) {
         logInfo("создание записи");
-        return repository.create(source);
+
+        validator.forCreate(source, userId);
+
+        return repository.save(source);
     }
 
     @Override
-    public T retrieve(Long id) {
+    public T retrieve(Long id, Optional<Long> userId) {
         logInfo("получение записи по идентификатору");
-        return repository.retrieve(id);
+
+        validator.forRetrieve(id, userId);
+
+        Optional<T> result = repository.findById(id);
+
+        if (result.isEmpty()) {
+            throw new NotFoundException("запись не найдена");
+        }
+        return result.get();
     }
 
     @Override
-    public List<T> retrieve() {
+    public List<T> retrieve(Optional<Long> userId) {
         logInfo("получение записей");
-        return repository.retrieve();
+
+        validator.forRetrieve(userId);
+
+        return repository.findAll();
     }
 
     @Override
-    public List<T> retrieve(List<Long> ids) {
+    public List<T> retrieve(List<Long> ids, Optional<Long> userId) {
         logInfo("получение записей по набору идентификаторов");
-        return repository.retrieve(ids);
+
+        validator.forRetrieve(ids, userId);
+
+        return repository.findAllById(ids);
+    }
+
+    protected T patch(T source, T target) {
+        target.setId(source.getId());
+
+        return target;
     }
 
     @Override
-    public T update(T source) {
+    public T update(T source, Optional<Long> userId) {
         logInfo("обновление записи");
-        return repository.update(source);
+
+        T target = patch(source, retrieve(source.getId(), userId));
+
+        validator.forUpdate(source, userId);
+
+        return repository.save(target);
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete(Long id, Optional<Long> userId) {
         logInfo("удаление записи");
-        repository.delete(id);
+
+        validator.forDelete(id, userId);
+
+        repository.deleteById(id);
     }
 
-    public Repository<T> getRepository() {
+    public ShareItRepository<T> getRepository() {
         return repository;
     }
 }

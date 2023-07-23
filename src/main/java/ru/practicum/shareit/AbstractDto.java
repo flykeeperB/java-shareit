@@ -1,10 +1,12 @@
 package ru.practicum.shareit;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Objects;
 
 @Data
+@NoArgsConstructor
 public abstract class AbstractDto {
     protected Long id;
 

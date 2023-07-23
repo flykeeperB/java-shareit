@@ -16,36 +16,42 @@ public class ItemRequestMapper
     private final UserMapper userMapper;
 
     @Override
-    public ItemRequestDto toDto(ItemRequest source) {
+    public ItemRequestDto toDto(ItemRequest source, ItemRequestDto target) {
         if (source == null) {
             return null;
         }
 
-        ItemRequestDto result = ItemRequestDto.builder()
-                .description(source.getDescription())
-                .requestor(userMapper.toDto(source.getRequestor()))
-                .created(userMapper.toDto(source.getCreated()))
-                .build();
+        target.setDescription(source.getDescription());
+        target.setRequestor(userMapper.toDto(source.getRequestor()));
+        target.setCreated(userMapper.toDto(source.getCreated()));
 
-        result.setId(source.getId());
+        target.setId(source.getId());
 
-        return result;
+        return target;
+    }
+
+    @Override
+    public ItemRequest fromDto(ItemRequestDto source, ItemRequest target) {
+        if (source == null) {
+            return null;
+        }
+
+        target.setDescription(source.getDescription());
+        target.setRequestor(userMapper.fromDto(source.getRequestor()));
+        target.setCreated(userMapper.fromDto(source.getCreated()));
+
+        target.setId(source.getId());
+
+        return target;
+    }
+
+    @Override
+    public ItemRequestDto toDto(ItemRequest source) {
+        return toDto(source, new ItemRequestDto());
     }
 
     @Override
     public ItemRequest fromDto(ItemRequestDto source) {
-        if (source == null) {
-            return null;
-        }
-
-        ItemRequest result = ItemRequest.builder()
-                .description(source.getDescription())
-                .requestor(userMapper.fromDto(source.getRequestor()))
-                .created(userMapper.fromDto(source.getCreated()))
-                .build();
-
-        result.setId(source.getId());
-
-        return result;
+        return fromDto(source, new ItemRequest());
     }
 }

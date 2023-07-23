@@ -12,34 +12,38 @@ public class UserMapper
         implements Mapper<User, UserDto> {
 
     @Override
-    public UserDto toDto(User source) {
+    public UserDto toDto(User source, UserDto target) {
         if (source == null) {
             return null;
         }
 
-        UserDto result = UserDto.builder()
-                .name(source.getName())
-                .email(source.getEmail())
-                .build();
+        target.setName(source.getName());
+        target.setEmail(source.getEmail());
+        target.setId(source.getId());
 
-        result.setId(source.getId());
+        return target;
+    }
 
-        return result;
+    @Override
+    public User fromDto(UserDto source, User target) {
+        if (source == null) {
+            return null;
+        }
+
+        target.setName(source.getName());
+        target.setEmail(source.getEmail());
+        target.setId(source.getId());
+
+        return target;
+    }
+
+    @Override
+    public UserDto toDto(User source) {
+        return toDto(source, new UserDto());
     }
 
     @Override
     public User fromDto(UserDto source) {
-        if (source == null) {
-            return null;
-        }
-
-        User result = User.builder()
-                .name(source.getName())
-                .email(source.getEmail())
-                .build();
-
-        result.setId(source.getId());
-
-        return result;
+        return fromDto(source, new User());
     }
 }

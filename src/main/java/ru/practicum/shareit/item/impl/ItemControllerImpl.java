@@ -3,9 +3,11 @@ package ru.practicum.shareit.item.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.AbstractController;
-import ru.practicum.shareit.exception.AccessDeniedException;
-import ru.practicum.shareit.exception.ValidationException;
-import ru.practicum.shareit.item.ItemMapper;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.ItemExtraDto;
+import ru.practicum.shareit.item.mapping.CommentMapper;
+import ru.practicum.shareit.item.mapping.ItemExtraMapper;
+import ru.practicum.shareit.item.mapping.ItemMapper;
 import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
@@ -25,47 +27,51 @@ public class ItemControllerImpl extends AbstractController<ItemDto, Item> {
     private final ItemMapper mapper;
     private final UserService userService;
     private final UserMapper userMapper;
+    private final ItemExtraMapper itemExtraMapper;
+    private final CommentMapper commentMapper;
 
 
     @Autowired
     public ItemControllerImpl(ItemService service,
                               ItemMapper mapper,
                               UserService userService,
-                              UserMapper userMapper) {
-        super(service, mapper, "Items");
+                              UserMapper userMapper,
+                              ItemExtraMapper itemExtraMapper,
+                              CommentMapper commentMapper) {
+        super(service, mapper);
         this.service = service;
         this.mapper = mapper;
         this.userService = userService;
         this.userMapper = userMapper;
-    }
-
-    private void validateUserId(Optional<Long> userId) {
-        if (userId.isEmpty()) {
-            throw new ValidationException("Не задан идентификатор пользователя");
-        }
-    }
-
-    private void validateOwner(Long userId, Long itemId) {
-        if (!getService().retrieve(itemId).getOwner().getId().equals(userId)) {
-            throw new AccessDeniedException("Изменять запись может только её владелец");
-        }
+        this.itemExtraMapper = itemExtraMapper;
+        this.commentMapper = commentMapper;
     }
 
     @PostMapping
     @Override
     public ItemDto create(@Valid @RequestBody ItemDto source,
                           @RequestHeader("X-Sharer-User-Id") Optional<Long> userId) {
-        validateUserId(userId);
-        source.setOwner(userMapper.toDto(userService.retrieve(userId.get())));
-
         return super.create(source, userId);
     }
 
     @GetMapping("/{itemId}")
     @Override
-    public ItemDto retrieve(@PathVariable Long itemId,
-                            @RequestHeader("X-Sharer-User-Id") Optional<Long> userId) {
-        return super.retrieve(itemId, userId);
+    public ItemExtraDto retrieve(@PathVariable Long itemId,
+                                 @RequestHeader("X-Sharer-User-Id") Optional<Long> userId) {
+        logInfo("Получение записи об отдельном бронировании");
+
+        Item item = service.retrieve(itemId, userId);
+        ItemExtraDto result = new ItemExtraDto();
+
+        if (userId.isPresent()) {
+            if (userId.get().equals(item.getOwner().getId())) {
+                return itemExtraMapper.toDto(item);
+            }
+        }
+
+        mapper.toDto(item, result);
+
+        return result;
     }
 
     @Override
@@ -74,12 +80,10 @@ public class ItemControllerImpl extends AbstractController<ItemDto, Item> {
     }
 
     @GetMapping
-    public List<ItemDto> retrieveForOwner(@RequestHeader("X-Sharer-User-Id") Optional<Long> userId) {
+    public List<ItemExtraDto> retrieveForOwner(@RequestHeader("X-Sharer-User-Id") Optional<Long> userId) {
         logInfo("получение записи о вещах по владельцу");
 
-        validateUserId(userId);
-
-        return mapper.toDto(service.retrieveForOwner(userId.get()));
+        return itemExtraMapper.toDto(service.retrieveForOwner(userId));
     }
 
     @GetMapping("/search")
@@ -87,9 +91,7 @@ public class ItemControllerImpl extends AbstractController<ItemDto, Item> {
                                                   @RequestHeader("X-Sharer-User-Id") Optional<Long> userId) {
         logInfo("поиск вещей по тексту в наименовании или описании");
 
-        validateUserId(userId);
-
-        return mapper.toDto(service.retrieveAvailableForSearchText(text));
+        return mapper.toDto(service.retrieveAvailableForSearchText(text, userId));
     }
 
     @PatchMapping("/{itemId}")
@@ -97,10 +99,13 @@ public class ItemControllerImpl extends AbstractController<ItemDto, Item> {
     public ItemDto update(@RequestBody(required = false) ItemDto source,
                           @PathVariable("itemId") Long id,
                           @RequestHeader("X-Sharer-User-Id") Optional<Long> userId) {
-        validateUserId(userId);
-        validateOwner(userId.get(), id);
 
         return super.update(source, id, userId);
+    }
+
+    @Override
+    public String getName() {
+        return "Items";
     }
 
     @DeleteMapping("/{itemId}")
@@ -108,5 +113,15 @@ public class ItemControllerImpl extends AbstractController<ItemDto, Item> {
     public void delete(@PathVariable Long itemId,
                        @RequestHeader("X-Sharer-User-Id") Optional<Long> userId) {
         super.delete(itemId, userId);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto createComment(@Valid @RequestBody CommentDto source,
+                                    @PathVariable Long itemId,
+                                    @RequestHeader("X-Sharer-User-Id") Optional<Long> userId) {
+        return commentMapper.toDto(service.createComment(
+                commentMapper.fromDto(source),
+                itemId,
+                userId));
     }
 }

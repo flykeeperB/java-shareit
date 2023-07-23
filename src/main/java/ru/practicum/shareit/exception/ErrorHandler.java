@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.validation.ConstraintViolationException;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -45,7 +46,21 @@ public class ErrorHandler {
         return new ErrorResponse(e.getMessage());
     }
 
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleIllegalArgumentException(IllegalArgumentException exception) {
+        log.error(exception.getMessage());
+        return new ErrorResponse(exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleValidationException(final SQLException e) {
+        return new ErrorResponse(e.getMessage());
+    }
+
     @ExceptionHandler(ConstraintViolationException.class)
+    //@ResponseStatus(HttpStatus.CONFLICT)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse onConstraintValidationException(
             ConstraintViolationException e

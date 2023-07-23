@@ -17,8 +17,9 @@ import java.util.Optional;
 public class UserControllerImpl extends AbstractController<UserDto, User> {
 
     @Autowired
-    public UserControllerImpl(UserService service, UserMapper mapper) {
-        super(service, mapper, "Users");
+    public UserControllerImpl(UserService service,
+                              UserMapper mapper) {
+        super(service, mapper);
     }
 
     @PostMapping
@@ -49,11 +50,17 @@ public class UserControllerImpl extends AbstractController<UserDto, User> {
         return super.update(source, id, userId);
     }
 
+    @Override
+    public String getName() {
+        return "Users";
+    }
+
     @DeleteMapping("/{userId}")
     @Override
     public void delete(@PathVariable("userId") Long id,
                        @RequestHeader("X-Sharer-User-Id") Optional<Long> userId) {
         super.delete(id, userId);
     }
+
 
 }
