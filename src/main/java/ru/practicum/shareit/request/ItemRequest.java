@@ -1,15 +1,17 @@
 package ru.practicum.shareit.request;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.AbstractModel;
+import lombok.Setter;
 import ru.practicum.shareit.user.model.User;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ItemRequest extends AbstractModel {
+@Getter
+@Setter
+public class ItemRequest {
+    private Long id;
     private String description;
     private User requestor;
     private User created;

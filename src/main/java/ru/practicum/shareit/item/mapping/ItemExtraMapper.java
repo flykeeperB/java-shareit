@@ -2,22 +2,20 @@ package ru.practicum.shareit.item.mapping;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.practicum.shareit.AbstractMapper;
-import ru.practicum.shareit.Mapper;
 import ru.practicum.shareit.booking.mapping.GenericBookingMapper;
 import ru.practicum.shareit.item.dto.ItemExtraDto;
 import ru.practicum.shareit.item.model.Item;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Component
 @AllArgsConstructor
-public class ItemExtraMapper
-        extends AbstractMapper<Item, ItemExtraDto>
-        implements Mapper<Item, ItemExtraDto> {
+public class ItemExtraMapper {
 
-    private final ItemMapper itemMapper;
     private final GenericBookingMapper bookingMapper;
+    private final ItemMapper itemMapper;
 
-    @Override
     public ItemExtraDto toDto(Item source, ItemExtraDto target) {
         if (source == null) {
             return null;
@@ -30,24 +28,11 @@ public class ItemExtraMapper
         return target;
     }
 
-    @Override
-    public Item fromDto(ItemExtraDto source, Item target) {
-        if (source == null) {
-            return null;
-        }
-
-        itemMapper.fromDto(source, target);
-
-        return target;
-    }
-
-    @Override
     public ItemExtraDto toDto(Item source) {
         return toDto(source, new ItemExtraDto());
     }
 
-    @Override
-    public Item fromDto(ItemExtraDto source) {
-        return fromDto(source, new Item());
+    public List<ItemExtraDto> toDto(List<Item> source) {
+        return source.stream().map(this::toDto).collect(Collectors.toList());
     }
 }

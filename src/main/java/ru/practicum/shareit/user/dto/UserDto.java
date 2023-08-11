@@ -1,16 +1,16 @@
 package ru.practicum.shareit.user.dto;
 
 import lombok.*;
-import ru.practicum.shareit.AbstractDto;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
-@EqualsAndHashCode(callSuper = true)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserDto extends AbstractDto {
+public class UserDto {
+
+    protected Long id;
 
     private String name;
 

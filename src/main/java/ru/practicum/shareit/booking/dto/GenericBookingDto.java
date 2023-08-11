@@ -2,19 +2,18 @@ package ru.practicum.shareit.booking.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import ru.practicum.shareit.AbstractDto;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
-@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class GenericBookingDto extends AbstractDto {
+public class GenericBookingDto {
+
+    protected Long id;
 
     private Long bookerId;
 

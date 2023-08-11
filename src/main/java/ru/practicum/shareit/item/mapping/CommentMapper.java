@@ -1,17 +1,15 @@
 package ru.practicum.shareit.item.mapping;
 
 import org.springframework.stereotype.Component;
-import ru.practicum.shareit.AbstractMapper;
-import ru.practicum.shareit.Mapper;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.model.Comment;
 
-@Component
-public class CommentMapper
-        extends AbstractMapper<Comment, CommentDto>
-        implements Mapper<Comment, CommentDto> {
+import java.util.List;
+import java.util.stream.Collectors;
 
-    @Override
+@Component
+public class CommentMapper {
+
     public CommentDto toDto(Comment source, CommentDto target) {
         if (source == null) {
             return null;
@@ -25,12 +23,10 @@ public class CommentMapper
         return target;
     }
 
-    @Override
     public CommentDto toDto(Comment source) {
         return toDto(source, new CommentDto());
     }
 
-    @Override
     public Comment fromDto(CommentDto source, Comment target) {
         if (source == null) {
             return null;
@@ -41,8 +37,14 @@ public class CommentMapper
         return target;
     }
 
-    @Override
     public Comment fromDto(CommentDto source) {
         return fromDto(source, new Comment());
+    }
+
+    public List<CommentDto> toDto(List<Comment> source) {
+        return source
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 }

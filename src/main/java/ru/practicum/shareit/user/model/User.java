@@ -1,20 +1,20 @@
 package ru.practicum.shareit.user.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import ru.practicum.shareit.AbstractModel;
+import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 @Entity
 @Table(name = "users")
-public class User extends AbstractModel {
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column
     private String name;
@@ -22,9 +22,4 @@ public class User extends AbstractModel {
     @Column(length = 512, unique = true)
     private String email;
 
-    public User(User user) {
-        super(user);
-        this.name = user.getName();
-        this.email = user.getEmail();
-    }
 }
