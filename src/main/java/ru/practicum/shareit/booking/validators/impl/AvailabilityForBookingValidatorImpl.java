@@ -18,7 +18,7 @@ public class AvailabilityForBookingValidatorImpl implements AvailabilityForBooki
     private final ItemService itemService;
 
     @Override
-    public void Validate(CreateBookingRequest request) {
+    public void validate(CreateBookingRequest request) {
         Item item = itemService.retrieve(request.getBookingDto().getItemId());
         if (!item.getAvailable()) {
             throw new ValidationException("вещь недоступна для бронирования");

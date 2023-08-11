@@ -17,7 +17,7 @@ public class SharerUserValidatorImpl implements SharerUserValidator {
     private final UserService userService;
 
     @Override
-    public void Validate(SharerUserIdRequest request) {
+    public void validate(SharerUserIdRequest request) {
         User user = userService.retrieve(request.getSharerUserId());
         if (user == null) {
             throw new NotFoundException("пользователь не найден");

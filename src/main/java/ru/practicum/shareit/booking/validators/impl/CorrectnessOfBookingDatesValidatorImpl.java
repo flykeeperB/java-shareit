@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 public class CorrectnessOfBookingDatesValidatorImpl implements CorrectnessOfBookingDatesValidator {
 
     @Override
-    public void Validate(CreateBookingRequest request) {
+    public void validate(CreateBookingRequest request) {
         BookingDto bookingDto = request.getBookingDto();
 
         if (bookingDto.getStart().isAfter(bookingDto.getEnd())) {

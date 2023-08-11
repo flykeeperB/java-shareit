@@ -20,9 +20,9 @@ public interface ItemService {
 
     ItemExtraDto retrieve(BasicItemRequest request);
 
-    ItemDto update(UpdateBasicItemRequest updateItemRequest);
+    ItemDto update(UpdateBasicItemRequest request);
 
-    void delete(BasicItemRequest BasicItemRequest);
+    void delete(BasicItemRequest request);
 
     Item retrieve(Long itemId);
 

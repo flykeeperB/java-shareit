@@ -4,5 +4,5 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.requestsModels.SharerUserIdRequest;
 
 public interface RelatedToBookedItemUserValidator {
-    void Validate(SharerUserIdRequest request, Booking booking);
+    void validate(SharerUserIdRequest request, Booking booking);
 }

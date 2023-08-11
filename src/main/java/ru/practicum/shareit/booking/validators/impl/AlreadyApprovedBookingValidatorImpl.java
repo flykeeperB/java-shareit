@@ -11,7 +11,7 @@ import ru.practicum.shareit.exception.ValidationException;
 public class AlreadyApprovedBookingValidatorImpl implements AlreadyApprovedBookingValidator {
 
     @Override
-    public void Validate(ApproveBookingRequest request, Booking booking) {
+    public void validate(ApproveBookingRequest request, Booking booking) {
         if (booking.getStatus().equals(BookingStatus.APPROVED)
                 && request.getIsApproved()) {
             throw new ValidationException("бронь уже была одобрена");

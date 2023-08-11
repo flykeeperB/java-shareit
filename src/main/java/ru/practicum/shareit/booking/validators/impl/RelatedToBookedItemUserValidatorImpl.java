@@ -10,7 +10,7 @@ import ru.practicum.shareit.exception.NotFoundException;
 public class RelatedToBookedItemUserValidatorImpl implements RelatedToBookedItemUserValidator {
 
     @Override
-    public void Validate(SharerUserIdRequest request, Booking booking) {
+    public void validate(SharerUserIdRequest request, Booking booking) {
         Long userId = request.getSharerUserId();
 
         if (!booking.getBooker().getId().equals(userId) &&

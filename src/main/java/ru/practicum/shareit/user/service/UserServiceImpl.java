@@ -30,20 +30,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public UserDto create(CreateUserRequest createUserRequest) {
+    public UserDto create(CreateUserRequest request) {
         log.info("создание записи");
 
-        User user = userMapper.fromDto(createUserRequest.getUserDto());
+        User user = userMapper.fromDto(request.getUserDto());
 
         return userMapper.toDto(repository.save(user));
     }
 
     @Override
     @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-    public UserDto retrieve(RetrieveUserRequest retrieveUserRequest) {
+    public UserDto retrieve(RetrieveUserRequest request) {
         log.info("получение записи по идентификатору");
 
-        User user = retrieve(retrieveUserRequest.getTargetUserId());
+        User user = retrieve(request.getTargetUserId());
 
         return userMapper.toDto(user);
     }
@@ -67,16 +67,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public UserDto update(UpdateUserRequest updateUserRequest) {
+    public UserDto update(UpdateUserRequest request) {
         log.info("обновление записи");
 
-        User target = retrieve(updateUserRequest.getTargetUserId());
+        User target = retrieve(request.getTargetUserId());
 
-        if (updateUserRequest.getUserDto() == null) {
-            return userMapper.toDto(retrieve(updateUserRequest.getTargetUserId()));
+        if (request.getUserDto() == null) {
+            return userMapper.toDto(retrieve(request.getTargetUserId()));
         }
 
-        User source = userMapper.fromDto(updateUserRequest.getUserDto());
+        User source = userMapper.fromDto(request.getUserDto());
 
         patch(source, target);
 
@@ -85,10 +85,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public void delete(DeleteUserRequest deleteUserRequest) {
+    public void delete(DeleteUserRequest request) {
         log.info("удаление записи");
 
-        repository.deleteById(deleteUserRequest.getTargetUserId());
+        repository.deleteById(request.getTargetUserId());
     }
 
     @Override
@@ -96,7 +96,7 @@ public class UserServiceImpl implements UserService {
     public User retrieve(Long id) {
         Optional<User> result = repository.findById(id);
 
-        userNullityValidator.Validate(result);
+        userNullityValidator.validate(result);
 
         return result.get();
     }

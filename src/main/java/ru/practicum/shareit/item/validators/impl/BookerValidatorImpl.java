@@ -12,7 +12,7 @@ import java.util.List;
 public class BookerValidatorImpl implements BookerValidator {
 
     @Override
-    public void Validate(BasicItemRequest request, List<BookingDto> successfulBookings) {
+    public void validate(BasicItemRequest request, List<BookingDto> successfulBookings) {
         for (BookingDto successfulBooking : successfulBookings) {
             if (successfulBooking.getBooker().getId().equals(request.getSharerUserId())) {
                 return;

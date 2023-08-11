@@ -4,5 +4,5 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.requestsModels.ApproveBookingRequest;
 
 public interface AlreadyApprovedBookingValidator {
-    void Validate(ApproveBookingRequest request, Booking booking);
+    void validate(ApproveBookingRequest request, Booking booking);
 }

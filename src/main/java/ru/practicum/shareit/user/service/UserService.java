@@ -12,17 +12,17 @@ import java.util.Optional;
 
 public interface UserService {
 
-    UserDto create(CreateUserRequest createUserRequest);
+    UserDto create(CreateUserRequest request);
 
-    UserDto retrieve(RetrieveUserRequest retrieveUserRequest);
+    UserDto retrieve(RetrieveUserRequest request);
 
     List<UserDto> retrieve();
 
     List<UserDto> retrieve(List<Long> ids, Optional<Long> userId);
 
-    UserDto update(UpdateUserRequest updateUserRequest);
+    UserDto update(UpdateUserRequest request);
 
-    void delete(DeleteUserRequest deleteUserRequest);
+    void delete(DeleteUserRequest request);
 
     User retrieve(Long id);
 

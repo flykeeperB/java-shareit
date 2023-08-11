@@ -49,9 +49,9 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto create(CreateBookingRequest request) {
         log.info("создание записи");
 
-        availabilityForBookingValidator.Validate(request);
-        correctnessOfBookingDatesValidator.Validate(request);
-        sharerUserValidator.Validate(request);
+        availabilityForBookingValidator.validate(request);
+        correctnessOfBookingDatesValidator.validate(request);
+        sharerUserValidator.validate(request);
 
         request.getBookingDto().setBookerId(request.getSharerUserId());
 
@@ -75,7 +75,7 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingDto> retrieveForBooker(ForStateBookingRequest request) {
         log.info("получение сведений о бронированиях для отдельного пользователя");
 
-        sharerUserValidator.Validate(request);
+        sharerUserValidator.validate(request);
 
         Long ownerId = request.getSharerUserId();
 
@@ -126,7 +126,7 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingDto> retrieveForItemsOwner(ForStateBookingRequest request) {
         log.info("получение сведений о бронированиях для отдельного владельца вещей");
 
-        sharerUserValidator.Validate(request);
+        sharerUserValidator.validate(request);
 
         Long itemOwnerId = request.getSharerUserId();
 
@@ -223,11 +223,11 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto retrieve(BasicBookingRequest basicBookingRequest) {
         log.info("Получение записи по идентификатору");
 
-        sharerUserValidator.Validate(basicBookingRequest);
+        sharerUserValidator.validate(basicBookingRequest);
 
         Booking booking = retrieve(basicBookingRequest.getTargetBookingId());
 
-        relatedToBookedItemUserValidator.Validate(basicBookingRequest, booking);
+        relatedToBookedItemUserValidator.validate(basicBookingRequest, booking);
 
         return bookingMapper.toDto(booking);
     }
@@ -246,8 +246,8 @@ public class BookingServiceImpl implements BookingService {
 
         Booking booking = this.retrieve(approveBookingRequest.getTargetBookingId());
 
-        ownerOfBookedItemValidator.Validate(approveBookingRequest, booking);
-        alreadyApprovedBookingValidator.Validate(approveBookingRequest, booking);
+        ownerOfBookedItemValidator.validate(approveBookingRequest, booking);
+        alreadyApprovedBookingValidator.validate(approveBookingRequest, booking);
 
         if (approveBookingRequest.getIsApproved()) {
             booking.setStatus(BookingStatus.APPROVED);

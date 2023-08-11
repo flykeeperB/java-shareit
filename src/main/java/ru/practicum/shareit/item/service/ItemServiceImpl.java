@@ -70,7 +70,7 @@ public class ItemServiceImpl implements ItemService {
 
         Item item = retrieve(updateItemRequest.getTargetItemId());
 
-        onlyItemOwnerValidator.Validate(updateItemRequest, item);
+        onlyItemOwnerValidator.validate(updateItemRequest, item);
 
         //Если не переданы новые данные для обновления, просто возвращаем запись
         if (updateItemRequest.getItemDto() == null) {
@@ -164,7 +164,7 @@ public class ItemServiceImpl implements ItemService {
                 retrieveRequest
         );
 
-        bookerValidator.Validate(request, successfulBookings);
+        bookerValidator.validate(request, successfulBookings);
 
         User user = userService.retrieve(request.getSharerUserId());
         Item item = retrieve(request.getTargetItemId());

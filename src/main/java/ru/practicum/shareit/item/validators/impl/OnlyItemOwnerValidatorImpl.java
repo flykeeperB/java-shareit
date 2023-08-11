@@ -10,7 +10,7 @@ import ru.practicum.shareit.item.validators.OnlyItemOwnerValidator;
 public class OnlyItemOwnerValidatorImpl implements OnlyItemOwnerValidator {
 
     @Override
-    public void Validate(BasicItemRequest request, Item item) {
+    public void validate(BasicItemRequest request, Item item) {
         if (!item.getOwner().getId().equals(request.getSharerUserId())) {
             throw new AccessDeniedException("Недопустимо для невладельца");
         }

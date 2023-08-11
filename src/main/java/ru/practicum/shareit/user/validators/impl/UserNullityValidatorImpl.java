@@ -11,7 +11,7 @@ import java.util.Optional;
 public class UserNullityValidatorImpl implements UserNullityValidator {
 
     @Override
-    public void Validate(Optional<User> user) {
+    public void validate(Optional<User> user) {
         user.orElseThrow(() -> new NotFoundException("запис о пользователе не найдена"));
     }
 }

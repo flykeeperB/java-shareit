@@ -6,5 +6,5 @@ import ru.practicum.shareit.item.requestsModels.BasicItemRequest;
 import java.util.List;
 
 public interface BookerValidator {
-    void Validate(BasicItemRequest request, List<BookingDto> successfulBookings);
+    void validate(BasicItemRequest request, List<BookingDto> successfulBookings);
 }
