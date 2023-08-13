@@ -1,21 +1,25 @@
 package ru.practicum.shareit.user.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import ru.practicum.shareit.AbstractModel;
+import lombok.*;
 
-@Builder
-@Data
+import javax.persistence.*;
+
 @AllArgsConstructor
-public class User extends AbstractModel {
+@NoArgsConstructor
+@Getter
+@Setter
+@Entity
+@Table(name = "users")
+public class User {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column
     private String name;
+
+    @Column(length = 512, unique = true)
     private String email;
 
-    public User(User user) {
-        super(user);
-        this.name = user.getName();
-        this.email = user.getEmail();
-    }
 }

@@ -2,50 +2,48 @@ package ru.practicum.shareit.request;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.practicum.shareit.AbstractMapper;
-import ru.practicum.shareit.Mapper;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
-import ru.practicum.shareit.user.UserMapper;
+import ru.practicum.shareit.user.mapping.UserMapper;
 
 @Component
 @AllArgsConstructor
-public class ItemRequestMapper
-        extends AbstractMapper<ItemRequest, ItemRequestDto>
-        implements Mapper<ItemRequest, ItemRequestDto> {
+public class ItemRequestMapper {
 
     private final UserMapper userMapper;
 
-    @Override
-    public ItemRequestDto toDto(ItemRequest source) {
+    public ItemRequestDto toDto(ItemRequest source, ItemRequestDto target) {
         if (source == null) {
             return null;
         }
 
-        ItemRequestDto result = ItemRequestDto.builder()
-                .description(source.getDescription())
-                .requestor(userMapper.toDto(source.getRequestor()))
-                .created(userMapper.toDto(source.getCreated()))
-                .build();
+        target.setDescription(source.getDescription());
+        target.setRequestor(userMapper.toDto(source.getRequestor()));
+        target.setCreated(userMapper.toDto(source.getCreated()));
 
-        result.setId(source.getId());
+        target.setId(source.getId());
 
-        return result;
+        return target;
     }
 
-    @Override
-    public ItemRequest fromDto(ItemRequestDto source) {
+    public ItemRequest fromDto(ItemRequestDto source, ItemRequest target) {
         if (source == null) {
             return null;
         }
 
-        ItemRequest result = ItemRequest.builder()
-                .description(source.getDescription())
-                .requestor(userMapper.fromDto(source.getRequestor()))
-                .created(userMapper.fromDto(source.getCreated()))
-                .build();
+        target.setDescription(source.getDescription());
+        target.setRequestor(userMapper.fromDto(source.getRequestor()));
+        target.setCreated(userMapper.fromDto(source.getCreated()));
 
-        result.setId(source.getId());
+        target.setId(source.getId());
 
-        return result;
+        return target;
+    }
+
+    public ItemRequestDto toDto(ItemRequest source) {
+        return toDto(source, new ItemRequestDto());
+    }
+
+    public ItemRequest fromDto(ItemRequestDto source) {
+        return fromDto(source, new ItemRequest());
     }
 }
