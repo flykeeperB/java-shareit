@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.booking.dto.GenericBookingDto;
+import ru.practicum.shareit.booking.dto.BookingDto;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -12,8 +12,8 @@ import ru.practicum.shareit.booking.dto.GenericBookingDto;
 @NoArgsConstructor
 public class ItemExtraDto extends ItemDto {
 
-    private GenericBookingDto lastBooking;
+    private BookingDto lastBooking;
 
-    private GenericBookingDto nextBooking;
+    private BookingDto nextBooking;
 
 }

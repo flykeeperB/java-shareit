@@ -1,8 +1,7 @@
 package ru.practicum.shareit.booking.validators;
 
-import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.requestsModels.ApproveBookingRequest;
+import ru.practicum.shareit.booking.contexts.ApproveBookingContext;
 
 public interface AlreadyApprovedBookingValidator {
-    void validate(ApproveBookingRequest request, Booking booking);
+    void validate(ApproveBookingContext context);
 }

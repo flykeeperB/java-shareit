@@ -2,97 +2,108 @@ package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingExtraDto;
 import ru.practicum.shareit.booking.dto.State;
-import ru.practicum.shareit.booking.requestsModels.*;
-import ru.practicum.shareit.booking.service.BookingService;
+import ru.practicum.shareit.booking.contexts.*;
+import ru.practicum.shareit.booking.service.ControllerBookingService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 @Slf4j
 @RestController
+@Validated
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
 public class BookingController {
 
-    private final BookingService service;
+    private final ControllerBookingService service;
 
     @PostMapping
-    public BookingDto create(@Valid @RequestBody BookingDto bookingDto,
-                             @RequestHeader(name = "X-Sharer-User-Id") Long userId) {
+    public BookingExtraDto create(@Valid @RequestBody BookingExtraDto bookingExtraDto,
+                                  @RequestHeader(name = "X-Sharer-User-Id") Long userId) {
         log.info("обработка запроса на создание записи о бронировании");
 
-        CreateBookingRequest createBookingRequest = CreateBookingRequest.builder()
+        CreateBookingContext context = CreateBookingContext.builder()
                 .sharerUserId(userId)
-                .bookingDto(bookingDto)
+                .bookingExtraDto(bookingExtraDto)
                 .build();
 
-        return service.create(createBookingRequest);
+        return service.create(context);
     }
 
     @GetMapping("/{bookingId}")
-    public BookingDto retrieve(@PathVariable Long bookingId,
-                               @RequestHeader(name = "X-Sharer-User-Id",
-                                       required = false) Long userId) {
+    public BookingExtraDto retrieve(@PathVariable Long bookingId,
+                                    @RequestHeader(name = "X-Sharer-User-Id",
+                                            required = false) Long userId) {
         log.info("обработка запроса на получение сведений о конкретном бронировании");
 
-        BasicBookingRequest basicBookingRequest = BasicBookingRequest.builder()
+        BasicBookingContext context = BasicBookingContext.builder()
                 .sharerUserId(userId)
                 .targetBookingId(bookingId)
                 .build();
 
-        return service.retrieve(basicBookingRequest);
+        return service.retrieve(context);
     }
 
     @GetMapping
-    public List<BookingDto> retrieveForBooker(@RequestParam(name = "state",
-            required = false,
-            defaultValue = "ALL") String state,
-                                              @RequestHeader(name = "X-Sharer-User-Id",
-                                                      required = false) Long userId) {
+    public List<BookingExtraDto> retrieveForBooker(@RequestParam(defaultValue = "0") @Min(0) Integer from,
+                                                   @RequestParam(defaultValue = "15") @Min(0) Integer size,
+                                                   @RequestParam(name = "state",
+                                                           required = false,
+                                                           defaultValue = "ALL") String state,
+                                                   @RequestHeader(name = "X-Sharer-User-Id",
+                                                           required = false) Long userId) {
         log.info("обработка запроса на получение сведений о бронированиях для отдельного пользователя");
 
-        ForStateBookingRequest forStateBookingRequest = ForStateBookingRequest.builder()
+        ForStateBookingContext context = ForStateBookingContext.builder()
                 .sharerUserId(userId)
                 .state(parseState(state.toUpperCase()))
+                .from(from)
+                .size(size)
                 .build();
 
-        return service.retrieveForBooker(forStateBookingRequest);
+        return service.retrieveForBooker(context);
     }
 
     @GetMapping("/owner")
-    public List<BookingDto> retrieveForItemsOwner(@RequestParam(name = "state",
-            required = false,
-            defaultValue = "ALL") String state,
-                                                  @RequestHeader(name = "X-Sharer-User-Id",
-                                                          required = false) Long userId) {
+    public List<BookingExtraDto> retrieveForItemsOwner(@RequestParam(defaultValue = "0") @Min(0) Integer from,
+                                                       @RequestParam(defaultValue = "15") @Min(0) Integer size,
+                                                       @RequestParam(name = "state",
+                                                               required = false,
+                                                               defaultValue = "ALL") String state,
+                                                       @RequestHeader(name = "X-Sharer-User-Id",
+                                                               required = false) Long userId) {
         log.info("обработка запроса на получение сведений о бронированиях вещей, принадлежащих отдельному пользователю");
 
-        ForStateBookingRequest request =
-                ForStateBookingRequest.builder()
+        ForStateBookingContext context =
+                ForStateBookingContext.builder()
                         .sharerUserId(userId)
                         .state(parseState(state.toUpperCase()))
+                        .from(from)
+                        .size(size)
                         .build();
 
-        return service.retrieveForItemsOwner(request);
+        return service.retrieveForItemsOwner(context);
     }
 
     @PatchMapping("/{bookingId}")
-    public BookingDto approve(@PathVariable("bookingId") Long bookingId,
-                              @RequestParam("approved") Boolean isApproved,
-                              @RequestHeader(name = "X-Sharer-User-Id",
-                                      required = false) Long userId) {
+    public BookingExtraDto approve(@PathVariable("bookingId") Long bookingId,
+                                   @RequestParam("approved") Boolean isApproved,
+                                   @RequestHeader(name = "X-Sharer-User-Id",
+                                           required = false) Long userId) {
         log.info("обработка запроса на подтверждение (отмену) бронирования");
 
-        ApproveBookingRequest approveBookingRequest = ApproveBookingRequest.builder()
+        ApproveBookingContext context = ApproveBookingContext.builder()
                 .sharerUserId(userId)
                 .targetBookingId(bookingId)
                 .isApproved(isApproved)
                 .build();
 
-        return service.approve(approveBookingRequest);
+        return service.approve(context);
     }
 
 
@@ -102,12 +113,12 @@ public class BookingController {
                                required = false) Long userId) {
         log.info("обработка запроса на удаление записи о бронировании");
 
-        BasicBookingRequest request = BasicBookingRequest.builder()
+        BasicBookingContext context = BasicBookingContext.builder()
                 .sharerUserId(userId)
                 .targetBookingId(bookingId)
                 .build();
 
-        service.delete(request);
+        service.delete(context);
     }
 
     private State parseState(String state) {
