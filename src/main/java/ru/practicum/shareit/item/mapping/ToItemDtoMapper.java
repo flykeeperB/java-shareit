@@ -7,10 +7,10 @@ import java.util.List;
 
 public interface ToItemDtoMapper {
 
-    ItemDto map (Item source);
+    ItemDto map(Item source);
 
-    ItemDto map (Item source, ItemDto target);
+    ItemDto map(Item source, ItemDto target);
 
-    List<ItemDto> map (List<Item> source);
+    List<ItemDto> map(List<Item> source);
 
 }

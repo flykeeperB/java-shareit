@@ -7,10 +7,10 @@ import java.util.List;
 
 public interface ToItemExtraDtoMapper {
 
-    ItemExtraDto map (Item source);
+    ItemExtraDto map(Item source);
 
-    ItemExtraDto map (Item source, ItemExtraDto target);
+    ItemExtraDto map(Item source, ItemExtraDto target);
 
-    List<ItemExtraDto> map (List<Item> source);
+    List<ItemExtraDto> map(List<Item> source);
 
 }

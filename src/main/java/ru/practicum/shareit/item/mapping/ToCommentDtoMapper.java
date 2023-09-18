@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ToCommentDtoMapper {
 
-    CommentDto map (Comment comment);
+    CommentDto map(Comment comment);
 
     List<CommentDto> map(List<Comment> source);
 }
