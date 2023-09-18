@@ -12,6 +12,7 @@ public class UserDto {
 
     protected Long id;
 
+    @NotBlank(message = "Не задано имя пользователя")
     private String name;
 
     @NotBlank(message = "Не задан адрес электронной почты")

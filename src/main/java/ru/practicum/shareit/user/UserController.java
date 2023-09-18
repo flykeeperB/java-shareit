@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.service.ControllerUserService;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.contexts.CreateUserContext;
+import ru.practicum.shareit.user.contexts.BasicUserContext;
 import ru.practicum.shareit.user.contexts.DeleteUserContext;
 import ru.practicum.shareit.user.contexts.RetrieveUserContext;
 import ru.practicum.shareit.user.contexts.UpdateUserContext;
@@ -25,11 +25,11 @@ public class UserController {
     public UserDto create(@Valid @RequestBody UserDto source) {
         log.info("запрос создания записи");
 
-        CreateUserContext createUserContext = CreateUserContext.builder()
+        BasicUserContext basicUserContext = BasicUserContext.builder()
                 .userDto(source)
                 .build();
 
-        return service.create(createUserContext);
+        return service.create(basicUserContext);
     }
 
     @GetMapping("/{userId}")

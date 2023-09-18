@@ -1,12 +1,10 @@
 package ru.practicum.shareit.user.contexts;
 
-import lombok.Builder;
 import lombok.Data;
-import ru.practicum.shareit.user.dto.UserDto;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@Builder
-public class UpdateUserContext {
+@SuperBuilder
+public class UpdateUserContext extends BasicUserContext {
     private final Long targetUserId;
-    private final UserDto userDto;
 }

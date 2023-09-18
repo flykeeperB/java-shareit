@@ -11,12 +11,13 @@ import ru.practicum.shareit.user.mapping.ToUserMapper;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.contexts.CreateUserContext;
+import ru.practicum.shareit.user.contexts.BasicUserContext;
 import ru.practicum.shareit.user.contexts.DeleteUserContext;
 import ru.practicum.shareit.user.contexts.RetrieveUserContext;
 import ru.practicum.shareit.user.contexts.UpdateUserContext;
 import ru.practicum.shareit.user.service.ControllerUserService;
 import ru.practicum.shareit.user.service.ExternalUserService;
+import ru.practicum.shareit.user.validators.UserNotBlankNameValidator;
 import ru.practicum.shareit.user.validators.UserNullityValidator;
 
 import java.util.List;
@@ -25,7 +26,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ControllerUserServiceImpl implements ControllerUserService, ExternalUserService {
+public class UserServiceImpl implements ControllerUserService, ExternalUserService {
 
     private final UserRepository repository;
 
@@ -34,11 +35,14 @@ public class ControllerUserServiceImpl implements ControllerUserService, Externa
     private final ToUserDtoListMapper toUserDtoListMapper;
 
     private final UserNullityValidator userNullityValidator;
+    private final UserNotBlankNameValidator userNotBlankNameValidator;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public UserDto create(CreateUserContext context) {
+    public UserDto create(BasicUserContext context) {
         log.info("создание записи");
+
+        userNotBlankNameValidator.validate(context);
 
         User user = toUserMapper.map(context.getUserDto());
 
@@ -47,10 +51,10 @@ public class ControllerUserServiceImpl implements ControllerUserService, Externa
 
     @Override
     @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-    public UserDto retrieve(RetrieveUserContext request) {
+    public UserDto retrieve(RetrieveUserContext context) {
         log.info("получение записи по идентификатору");
 
-        User user = retrieve(request.getTargetUserId());
+        User user = retrieve(context.getTargetUserId());
 
         return toUserDtoMapper.map(user);
     }
@@ -63,27 +67,18 @@ public class ControllerUserServiceImpl implements ControllerUserService, Externa
         return toUserDtoListMapper.map(repository.findAll());
     }
 
-    //todo переписать
-    @Override
-    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-    public List<UserDto> retrieve(List<Long> ids, Optional<Long> userId) {
-        log.info("получение записей по набору идентификаторов");
-
-        return toUserDtoListMapper.map(repository.findAllById(ids));
-    }
-
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public UserDto update(UpdateUserContext request) {
+    public UserDto update(UpdateUserContext context) {
         log.info("обновление записи");
 
-        User target = retrieve(request.getTargetUserId());
+        User target = retrieve(context.getTargetUserId());
 
-        if (request.getUserDto() == null) {
-            return toUserDtoMapper.map(retrieve(request.getTargetUserId()));
+        if (context.getUserDto() == null) {
+            return toUserDtoMapper.map(retrieve(context.getTargetUserId()));
         }
 
-        User source = toUserMapper.map(request.getUserDto());
+        User source = toUserMapper.map(context.getUserDto());
 
         patch(source, target);
 
@@ -92,10 +87,10 @@ public class ControllerUserServiceImpl implements ControllerUserService, Externa
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public void delete(DeleteUserContext request) {
+    public void delete(DeleteUserContext context) {
         log.info("удаление записи");
 
-        repository.deleteById(request.getTargetUserId());
+        repository.deleteById(context.getTargetUserId());
     }
 
     @Override
