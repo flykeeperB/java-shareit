@@ -9,6 +9,6 @@ public interface ExternalItemService {
 
     Item retrieve(Long itemId);
 
-    Map<Long, List<Item>> retrieveForRequestsIds (List<Long> ids);
+    Map<Long, List<Item>> retrieveForRequestsIds(List<Long> ids);
 
 }
