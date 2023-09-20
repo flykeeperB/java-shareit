@@ -38,6 +38,8 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
 
+    private UserServiceImpl userService;
+
     @Mock
     private UserRepository userRepository;
 
@@ -45,8 +47,6 @@ class UserServiceImplTest {
     private ToUserMapper toUserMapper;
     private ToUserDtoListMapper toUserDtoListMapper;
     private UserNullityValidator userNullityValidator;
-
-    private UserServiceImpl userService;
     private UserNotBlankNameValidator userNotBlankNameValidator;
 
     private User testSourceUser;
@@ -128,10 +128,6 @@ class UserServiceImplTest {
     void retrieveAllTest() {
 
         when(userRepository.findAll()).thenReturn(List.of(testSourceUser));
-
-        RetrieveUserContext testContext = RetrieveUserContext.builder()
-                .targetUserId(1L)
-                .build();
 
         List<UserDto> testResultUser = userService.retrieve();
 
