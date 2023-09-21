@@ -220,24 +220,10 @@ public class BookingServiceImplTest {
                 .save(any(Booking.class));
     }
 
-    @Test
-    public void retrieveForBookerTest() {
-        User testUser = testDataGenerator.generateUser();
-        when(userService.retrieve(anyLong())).thenReturn(testUser);
-
-        List<Booking> repositoryResult = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            repositoryResult.add(testDataGenerator.generateBooking());
-        }
-
-        when(bookingRepository.findByBookerIdAndStatusAndStartBefore(anyLong(),
-                any(BookingStatus.class),
-                any(LocalDateTime.class),
-                any(Pageable.class))).thenReturn(repositoryResult);
-
+    private void retrieveForBookerByState(State testState, List<Booking> repositoryResult) {
         ForStateBookingContext testContext = ForStateBookingContext.builder()
                 .sharerUserId(1L)
-                .state(State.STARTED)
+                .state(testState)
                 .from(1)
                 .size(10)
                 .build();
@@ -248,12 +234,109 @@ public class BookingServiceImplTest {
         assertEquals(10, testResult.size(), "Неверное количество записей в результате");
         assertThat(testResult.get(0).getId(), equalTo(repositoryResult.get(0).getId()));
 
+    }
+
+    @Test
+    public void retrieveForBookerTest() {
+        User testUser = testDataGenerator.generateUser();
+        when(userService.retrieve(anyLong())).thenReturn(testUser);
+
+        List<Booking> repositoryResult = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            repositoryResult.add(testDataGenerator.generateBooking());
+        }
+
+        when(bookingRepository.findByBookerIdAndEndBeforeOrderByStartDesc(anyLong(),
+                any(LocalDateTime.class),
+                any(Pageable.class))).thenReturn(repositoryResult);
+
+        when(bookingRepository.findByBookerIdAndStartAfterOrderByStartDesc(anyLong(),
+                any(LocalDateTime.class),
+                any(Pageable.class))).thenReturn(repositoryResult);
+
+        when(bookingRepository.findByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(anyLong(),
+                any(LocalDateTime.class),
+                any(LocalDateTime.class),
+                any(Pageable.class))).thenReturn(repositoryResult);
+
+        when(bookingRepository.findByBookerIdAndStatusOrderByStartDesc(anyLong(),
+                any(BookingStatus.class),
+                any(Pageable.class))).thenReturn(repositoryResult);
+
+        when(bookingRepository.findByBookerIdAndStatusAndStartBefore(anyLong(),
+                any(BookingStatus.class),
+                any(LocalDateTime.class),
+                any(Pageable.class))).thenReturn(repositoryResult);
+
+        when(bookingRepository.findByBookerIdAndStatusAndEndBefore(anyLong(),
+                any(BookingStatus.class),
+                any(LocalDateTime.class),
+                any(Pageable.class))).thenReturn(repositoryResult);
+
+        when(bookingRepository.findByBookerIdOrderByStartDesc(anyLong(),
+                any(Pageable.class))).thenReturn(repositoryResult);
+
+        for (State state : State.values()) {
+            retrieveForBookerByState(state, repositoryResult);
+        }
+
         Mockito.verify(bookingRepository, Mockito.times(1))
                 .findByBookerIdAndStatusAndStartBefore(anyLong(),
-                        eq(BookingStatus.APPROVED),
+                        any(BookingStatus.class),
                         any(LocalDateTime.class),
                         any(Pageable.class));
 
+        Mockito.verify(bookingRepository, Mockito.times(1))
+                .findByBookerIdAndEndBeforeOrderByStartDesc(anyLong(),
+                        any(LocalDateTime.class),
+                        any(Pageable.class));
+
+        Mockito.verify(bookingRepository, Mockito.times(1))
+                .findByBookerIdAndStartAfterOrderByStartDesc(anyLong(),
+                        any(LocalDateTime.class),
+                        any(Pageable.class));
+
+        Mockito.verify(bookingRepository, Mockito.times(1))
+                .findByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(anyLong(),
+                        any(LocalDateTime.class),
+                        any(LocalDateTime.class),
+                        any(Pageable.class));
+
+        Mockito.verify(bookingRepository, Mockito.times(2))
+                .findByBookerIdAndStatusOrderByStartDesc(anyLong(),
+                        any(BookingStatus.class),
+                        any(Pageable.class));
+
+        Mockito.verify(bookingRepository, Mockito.times(1))
+                .findByBookerIdAndStatusAndStartBefore(anyLong(),
+                        any(BookingStatus.class),
+                        any(LocalDateTime.class),
+                        any(Pageable.class));
+
+        Mockito.verify(bookingRepository, Mockito.times(1))
+                .findByBookerIdAndStatusAndEndBefore(anyLong(),
+                        any(BookingStatus.class),
+                        any(LocalDateTime.class),
+                        any(Pageable.class));
+
+        Mockito.verify(bookingRepository, Mockito.times(1))
+                .findByBookerIdOrderByStartDesc(anyLong(),
+                        any(Pageable.class));
+    }
+
+    private void retrieveForOwnerByState(State testState, List<Booking> repositoryResult) {
+        ForStateBookingContext testContext = ForStateBookingContext.builder()
+                .sharerUserId(1L)
+                .state(testState)
+                .from(1)
+                .size(10)
+                .build();
+
+        List<BookingExtraDto> testResult = bookingService.retrieveForItemsOwner(testContext);
+
+        assertNotNull(testResult, "Не возвращается результат.");
+        assertEquals(10, testResult.size(), "Неверное количество записей в результате");
+        assertThat(testResult.get(0).getId(), equalTo(repositoryResult.get(0).getId()));
     }
 
     @Test
@@ -266,30 +349,78 @@ public class BookingServiceImplTest {
             repositoryResult.add(testDataGenerator.generateBooking());
         }
 
+        when(bookingRepository.findByItemOwnerIdAndEndBeforeOrderByStartDesc(anyLong(),
+                any(LocalDateTime.class),
+                any(Pageable.class))).thenReturn(repositoryResult);
+
+        when(bookingRepository.findByItemOwnerIdAndStartAfterOrderByStartDesc(anyLong(),
+                any(LocalDateTime.class),
+                any(Pageable.class))).thenReturn(repositoryResult);
+
+        when(bookingRepository.findByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(anyLong(),
+                any(LocalDateTime.class),
+                any(LocalDateTime.class),
+                any(Pageable.class))).thenReturn(repositoryResult);
+
+        when(bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(anyLong(),
+                any(BookingStatus.class),
+                any(Pageable.class))).thenReturn(repositoryResult);
+
         when(bookingRepository.findByItemOwnerIdAndStatusAndStartBefore(anyLong(),
                 any(BookingStatus.class),
                 any(LocalDateTime.class),
                 any(Pageable.class))).thenReturn(repositoryResult);
 
-        ForStateBookingContext testContext =
-                ForStateBookingContext.builder()
-                        .sharerUserId(1L)
-                        .state(State.STARTED)
-                        .from(1)
-                        .size(10)
-                        .build();
+        when(bookingRepository.findByItemOwnerIdAndStatusAndEndBefore(anyLong(),
+                any(BookingStatus.class),
+                any(LocalDateTime.class),
+                any(Pageable.class))).thenReturn(repositoryResult);
 
-        List<BookingExtraDto> testResult = bookingService.retrieveForItemsOwner(testContext);
+        when(bookingRepository.findByItemOwnerIdOrderByStartDesc(anyLong(),
+                any(Pageable.class))).thenReturn(repositoryResult);
 
-        assertNotNull(testResult, "Не возвращается результат.");
-        assertEquals(10, testResult.size(), "Неверное количество записей в результате");
-        assertThat(testResult.get(0).getId(), equalTo(repositoryResult.get(0).getId()));
+        for (State state : State.values()) {
+            retrieveForOwnerByState(state, repositoryResult);
+        }
+
+
+        Mockito.verify(bookingRepository, Mockito.times(1))
+                .findByItemOwnerIdAndEndBeforeOrderByStartDesc(anyLong(),
+                        any(LocalDateTime.class),
+                        any(Pageable.class));
+
+        Mockito.verify(bookingRepository, Mockito.times(1))
+                .findByItemOwnerIdAndStartAfterOrderByStartDesc(anyLong(),
+                        any(LocalDateTime.class),
+                        any(Pageable.class));
+
+        Mockito.verify(bookingRepository, Mockito.times(1))
+                .findByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(anyLong(),
+                        any(LocalDateTime.class),
+                        any(LocalDateTime.class),
+                        any(Pageable.class));
+
+        Mockito.verify(bookingRepository, Mockito.times(2))
+                .findByItemOwnerIdAndStatusOrderByStartDesc(anyLong(),
+                        any(BookingStatus.class),
+                        any(Pageable.class));
 
         Mockito.verify(bookingRepository, Mockito.times(1))
                 .findByItemOwnerIdAndStatusAndStartBefore(anyLong(),
-                        eq(BookingStatus.APPROVED),
+                        any(BookingStatus.class),
                         any(LocalDateTime.class),
                         any(Pageable.class));
+
+        Mockito.verify(bookingRepository, Mockito.times(1))
+                .findByItemOwnerIdAndStatusAndEndBefore(anyLong(),
+                        any(BookingStatus.class),
+                        any(LocalDateTime.class),
+                        any(Pageable.class));
+
+        Mockito.verify(bookingRepository, Mockito.times(1))
+                .findByItemOwnerIdOrderByStartDesc(anyLong(),
+                        any(Pageable.class));
+
     }
 
     @Test

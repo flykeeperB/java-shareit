@@ -211,7 +211,7 @@ public class ItemServiceImplTest {
 
         CreateCommentContext testContext = CreateCommentContext.builder()
                 .sharerUserId(1L)
-                .comment(testDataGenerator.generateCommentDto())
+                .comment(testDataGenerator.generateOnlyTextCommentDto())
                 .targetItemId(1L)
                 .build();
 
@@ -231,8 +231,11 @@ public class ItemServiceImplTest {
         when(itemRepository.save(any(Item.class))).thenReturn(testItem);
         User testUser = testDataGenerator.generateUser();
         when(userService.retrieve(any())).thenReturn(testUser);
+        when(itemRequestService.retrieve(anyLong()))
+                .thenReturn(testDataGenerator.generateItemRequest());
 
         testItemDto.setId(null);
+        testItemDto.setRequestId(1L);
 
         CreateItemContext testContext = CreateItemContext.builder()
                 .itemDto(testItemDto)
@@ -292,6 +295,30 @@ public class ItemServiceImplTest {
         Mockito.verify(itemRepository, Mockito.times(1))
                 .findById(anyLong());
         Mockito.verify(itemRepository, Mockito.times(1))
+                .save(any(Item.class));
+    }
+
+    @Test
+    void updateNoNewDataTest() {
+        testItem.getOwner().setId(1L);
+        //для получение существующей записи перед обновлением
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.ofNullable(testItem));
+
+        UpdateItemContext testContext = UpdateItemContext.builder()
+                .sharerUserId(1L)
+                .itemDto(null)
+                .targetItemId(testItemDto.getId())
+                .build();
+
+        ItemDto testResult = itemService.update(testContext);
+
+        assertNotNull(testResult, "Не возвращается результат.");
+        assertThat(testResult.getId(), equalTo(testItem.getId()));
+        assertThat(testResult.getName(), equalTo(testItem.getName()));
+        assertThat(testResult.getDescription(), equalTo(testItem.getDescription()));
+        Mockito.verify(itemRepository, Mockito.times(2))
+                .findById(anyLong());
+        Mockito.verify(itemRepository, Mockito.never())
                 .save(any(Item.class));
     }
 

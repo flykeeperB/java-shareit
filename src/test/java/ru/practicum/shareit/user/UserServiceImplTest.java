@@ -98,9 +98,7 @@ class UserServiceImplTest {
                 .userDto(testSourceUserDto)
                 .build();
 
-        Throwable thrown = assertThrows(ValidationException.class, () -> {
-            userService.create(testContext);
-        });
+        Throwable thrown = assertThrows(ValidationException.class, () -> userService.create(testContext));
 
         assertNotNull(thrown.getMessage());
     }

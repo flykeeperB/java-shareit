@@ -10,9 +10,11 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.TestDataGenerator.TestDataGenerator;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.contexts.BasicUserContext;
 import ru.practicum.shareit.user.contexts.DeleteUserContext;
 import ru.practicum.shareit.user.contexts.RetrieveUserContext;
+import ru.practicum.shareit.user.contexts.UpdateUserContext;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.ControllerUserService;
@@ -73,6 +75,28 @@ public class UserControllerTest {
 
     @SneakyThrows
     @Test
+    public void updateRequestTest() {
+        when(userService.update(any(UpdateUserContext.class))).thenReturn(testUserDto);
+
+        testUserDto.setId(null);
+
+        mockMvc.perform(patch("/users/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(objectMapper.writeValueAsString(testUserDto))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id", is(testUserDto.getId()), Long.class))
+                .andExpect(jsonPath("$.name").value(testUserDto.getName()))
+                .andExpect(jsonPath("$.email").value(testUserDto.getEmail()));
+
+        verify(userService).update(any(UpdateUserContext.class));
+        verifyNoMoreInteractions(userService);
+    }
+
+    @SneakyThrows
+    @Test
     public void retrieveOneRequestTest() {
         when(userService.retrieve(any(RetrieveUserContext.class))).thenReturn(testUserDto);
 
@@ -112,12 +136,27 @@ public class UserControllerTest {
     @SneakyThrows
     @Test
     public void deleteRequestTest() {
-
-        mockMvc.perform(delete("/users/{userId}", testUserDto.getId())
+        mockMvc.perform(delete("/users/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+
+        verify(userService).delete(any(DeleteUserContext.class));
+        verifyNoMoreInteractions(userService);
+    }
+
+    @SneakyThrows
+    @Test
+    public void deleteByWrongIdRequestTest() {
+
+        doThrow(new NotFoundException("not found")).when(userService).delete(any(DeleteUserContext.class));
+
+        mockMvc.perform(delete("/users/99")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
 
         verify(userService).delete(any(DeleteUserContext.class));
         verifyNoMoreInteractions(userService);

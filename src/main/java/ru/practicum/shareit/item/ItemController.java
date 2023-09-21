@@ -68,7 +68,7 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public List<ItemDto> retrieveAvailableForText(@RequestParam(defaultValue = "0") @Min(0) Integer from,
+    public List<ItemDto> retrieveAvailableForSearchText(@RequestParam(defaultValue = "0") @Min(0) Integer from,
                                                   @RequestParam(defaultValue = "15") @Min(0) Integer size,
                                                   @RequestParam String text,
                                                   @RequestHeader(name = "X-Sharer-User-Id") Long userId) {
@@ -115,7 +115,6 @@ public class ItemController {
     }
 
     @PostMapping("/{itemId}/comment")
-    @ResponseStatus(HttpStatus.CREATED)
     public CommentDto createComment(@Valid @RequestBody CommentDto commentDto,
                                     @PathVariable Long itemId,
                                     @RequestHeader(

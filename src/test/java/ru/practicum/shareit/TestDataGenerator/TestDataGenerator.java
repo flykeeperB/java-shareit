@@ -5,15 +5,18 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemExtraDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.dto.CreateItemRequestDto;
+import ru.practicum.shareit.request.dto.ExtraItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -164,6 +167,20 @@ public class TestDataGenerator {
         );
     }
 
+    public ItemExtraDto generateItemExtraDto() {
+        ItemExtraDto result = new ItemExtraDto();
+        lastItemId++;
+        result.setId(lastItemId);
+        String itemName = getRandomStringValue(itemNames);
+        result.setName(itemName+lastItemId);
+        result.setDescription("Это отличный " + itemName);
+        result.setOwner(generateUserDto());
+        result.setAvailable(true);
+        result.setLastBooking(generateBookingDto());
+        result.setNextBooking(generateBookingDto());
+        return result;
+    }
+
     public Booking generateBooking() {
         LocalDateTime bookingMoment = LocalDateTime.now().plusHours(10);
         return new Booking(++lastBookingId,
@@ -191,11 +208,22 @@ public class TestDataGenerator {
         return result;
     }
 
-    public CommentDto generateCommentDto() {
+    public CommentDto generateOnlyTextCommentDto() {
         CommentDto result = new CommentDto();
 
-        lastCommentId++;
         result.setText("отличный комментарий " + lastCommentId);
+
+        return result;
+    }
+
+    public CommentDto generateDetailedCommentDto() {
+        CommentDto result = generateOnlyTextCommentDto();
+
+        lastCommentId++;
+        result.setId(lastCommentId);
+        result.setAuthorName(makeName(Sex.RANDOM));
+        int createTime = (int) (10000 * Math.random());
+        result.setCreated(LocalDateTime.now().minusMinutes(createTime));
 
         return result;
     }
@@ -227,10 +255,34 @@ public class TestDataGenerator {
         return result;
     }
 
+    public ItemRequestDto generateItemRequestWithOnlyTextDto() {
+        ItemRequestDto result = new ItemRequestDto();
+        result.setDescription("хотелось взять напрокат " + getRandomStringValue(itemNames));
+        return result;
+    }
+
     public ItemRequestDto generateItemRequestDto() {
         ItemRequestDto result = new ItemRequestDto();
+        lastItemRequestId++;
+        result.setId(lastItemRequestId);
         result.setRequestor(generateUserDto());
         result.setDescription("хотелось взять напрокат " + getRandomStringValue(itemNames));
+        return result;
+    }
+
+    public ExtraItemRequestDto generateExtraItemRequestDto() {
+        ExtraItemRequestDto result = new ExtraItemRequestDto();
+
+        lastItemRequestId++;
+        result.setId(lastItemRequestId);
+
+        result.setItems(new ArrayList<>());
+        for (int i = 0; i < 10; i++) {
+            result.getItems().add(generateItemDto());
+        }
+        result.setRequestor(generateUserDto());
+        result.setDescription("хотелось взять напрокат " + getRandomStringValue(itemNames));
+
         return result;
     }
 

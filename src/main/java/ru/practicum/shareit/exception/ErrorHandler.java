@@ -1,7 +1,6 @@
 package ru.practicum.shareit.exception;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -60,7 +59,6 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    //@ResponseStatus(HttpStatus.CONFLICT)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse onConstraintValidationException(
             ConstraintViolationException e
@@ -71,18 +69,6 @@ public class ErrorHandler {
                                 + "> " +
                                 violation.getMessage()
                 )
-                .collect(Collectors.toList());
-        log.error(violations.toString());
-        return new ErrorResponse(violations.toString());
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse onMethodArgumentNotValidException(
-            MethodArgumentNotValidException e
-    ) {
-        final List<String> violations = e.getBindingResult().getFieldErrors().stream()
-                .map(error -> error.getField() + "> " + error.getDefaultMessage())
                 .collect(Collectors.toList());
         log.error(violations.toString());
         return new ErrorResponse(violations.toString());
