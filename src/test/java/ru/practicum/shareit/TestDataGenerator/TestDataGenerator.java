@@ -116,10 +116,6 @@ public class TestDataGenerator {
                 "линейка");
     }
 
-    private String getRandomStringValue(List<String> source) {
-        return source.get((int) (Math.random() * source.size()));
-    }
-
     public String makeName(Sex sex) {
         if (sex.equals(Sex.RANDOM)) {
             sex = Math.random() > 0.5 ? Sex.MALE : Sex.FEMALE;
@@ -290,6 +286,10 @@ public class TestDataGenerator {
         CreateItemRequestDto result = new CreateItemRequestDto();
         result.setDescription("хотелось взять напрокат " + getRandomStringValue(itemNames));
         return result;
+    }
+
+    private String getRandomStringValue(List<String> source) {
+        return source.get((int) (Math.random() * source.size()));
     }
 
 }

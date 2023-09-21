@@ -76,7 +76,7 @@ public class RequestServiceImplTest {
     private ItemRequestDto testItemRequestDto;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         sharerUserValidator = new SharerUserValidatorImpl();
         notBlankDescriptionOfItemRequestValidator = new NotBlankDescriptionOfItemRequestValidatorImpl();
 

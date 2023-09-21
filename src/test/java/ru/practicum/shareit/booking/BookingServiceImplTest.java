@@ -86,7 +86,7 @@ public class BookingServiceImplTest {
     private BookingExtraDto testBookingDto;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         AvailabilityForBookingValidator availabilityForBookingValidator =
                 new AvailabilityForBookingValidatorImpl();
         CorrectnessOfBookingDatesValidator correctnessOfBookingDatesValidator =
@@ -220,22 +220,6 @@ public class BookingServiceImplTest {
                 .save(any(Booking.class));
     }
 
-    private void retrieveForBookerByState(State testState, List<Booking> repositoryResult) {
-        ForStateBookingContext testContext = ForStateBookingContext.builder()
-                .sharerUserId(1L)
-                .state(testState)
-                .from(1)
-                .size(10)
-                .build();
-
-        List<BookingExtraDto> testResult = bookingService.retrieveForBooker(testContext);
-
-        assertNotNull(testResult, "Не возвращается результат.");
-        assertEquals(10, testResult.size(), "Неверное количество записей в результате");
-        assertThat(testResult.get(0).getId(), equalTo(repositoryResult.get(0).getId()));
-
-    }
-
     @Test
     public void retrieveForBookerTest() {
         User testUser = testDataGenerator.generateUser();
@@ -322,21 +306,6 @@ public class BookingServiceImplTest {
         Mockito.verify(bookingRepository, Mockito.times(1))
                 .findByBookerIdOrderByStartDesc(anyLong(),
                         any(Pageable.class));
-    }
-
-    private void retrieveForOwnerByState(State testState, List<Booking> repositoryResult) {
-        ForStateBookingContext testContext = ForStateBookingContext.builder()
-                .sharerUserId(1L)
-                .state(testState)
-                .from(1)
-                .size(10)
-                .build();
-
-        List<BookingExtraDto> testResult = bookingService.retrieveForItemsOwner(testContext);
-
-        assertNotNull(testResult, "Не возвращается результат.");
-        assertEquals(10, testResult.size(), "Неверное количество записей в результате");
-        assertThat(testResult.get(0).getId(), equalTo(repositoryResult.get(0).getId()));
     }
 
     @Test
@@ -535,6 +504,37 @@ public class BookingServiceImplTest {
                 .findByBookerIdAndStatusAndEndBefore(anyLong(),
                         any(BookingStatus.class),
                         any(LocalDateTime.class));
+
+    }
+
+    private void retrieveForOwnerByState(State testState, List<Booking> repositoryResult) {
+        ForStateBookingContext testContext = ForStateBookingContext.builder()
+                .sharerUserId(1L)
+                .state(testState)
+                .from(1)
+                .size(10)
+                .build();
+
+        List<BookingExtraDto> testResult = bookingService.retrieveForItemsOwner(testContext);
+
+        assertNotNull(testResult, "Не возвращается результат.");
+        assertEquals(10, testResult.size(), "Неверное количество записей в результате");
+        assertThat(testResult.get(0).getId(), equalTo(repositoryResult.get(0).getId()));
+    }
+
+    private void retrieveForBookerByState(State testState, List<Booking> repositoryResult) {
+        ForStateBookingContext testContext = ForStateBookingContext.builder()
+                .sharerUserId(1L)
+                .state(testState)
+                .from(1)
+                .size(10)
+                .build();
+
+        List<BookingExtraDto> testResult = bookingService.retrieveForBooker(testContext);
+
+        assertNotNull(testResult, "Не возвращается результат.");
+        assertEquals(10, testResult.size(), "Неверное количество записей в результате");
+        assertThat(testResult.get(0).getId(), equalTo(repositoryResult.get(0).getId()));
 
     }
 }

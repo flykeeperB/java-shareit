@@ -82,7 +82,7 @@ public class ItemServiceImplTest {
     private ItemDto testItemDto;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
 
         toCommentDtoMapper = new ToCommentDtoMapperImpl();
         toItemDtoMapper = new ToItemDtoMapperImpl(new ToUserDtoMapperImpl(), toCommentDtoMapper);
@@ -114,7 +114,7 @@ public class ItemServiceImplTest {
     }
 
     @Test
-    void retrieveForOwnerTest() {
+    public void retrieveForOwnerTest() {
         List<Item> repositoryResult = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             repositoryResult.add(testDataGenerator.generateItem());
@@ -140,7 +140,7 @@ public class ItemServiceImplTest {
     }
 
     @Test
-    void retrieveAvailableForSearchTextTest() {
+    public void retrieveAvailableForSearchTextTest() {
         List<Item> repositoryResult = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             repositoryResult.add(testDataGenerator.generateItem());
@@ -168,7 +168,7 @@ public class ItemServiceImplTest {
     }
 
     @Test
-    void retrieveAvailableForEmptySearchTextTest() {
+    public void retrieveAvailableForEmptySearchTextTest() {
         List<Item> repositoryResult = new ArrayList<>();
 
         RetrieveAvailableForSearchTextContext testContext = RetrieveAvailableForSearchTextContext.builder()
@@ -188,7 +188,7 @@ public class ItemServiceImplTest {
     }
 
     @Test
-    void createCommentTest() {
+    public void createCommentTest() {
 
         when(itemRepository.findById(anyLong())).thenReturn(Optional.ofNullable(testItem));
 
@@ -227,7 +227,7 @@ public class ItemServiceImplTest {
     }
 
     @Test
-    void createTest() {
+    public void createTest() {
         when(itemRepository.save(any(Item.class))).thenReturn(testItem);
         User testUser = testDataGenerator.generateUser();
         when(userService.retrieve(any())).thenReturn(testUser);
@@ -253,7 +253,7 @@ public class ItemServiceImplTest {
     }
 
     @Test
-    void retrieveTest() {
+    public void retrieveTest() {
 
         when(itemRepository.findById(anyLong())).thenReturn(Optional.ofNullable(testItem));
 
@@ -273,7 +273,7 @@ public class ItemServiceImplTest {
     }
 
     @Test
-    void updateTest() {
+    public void updateTest() {
         testItem.getOwner().setId(1L);
         //для получение существующей записи перед обновлением
         when(itemRepository.findById(anyLong())).thenReturn(Optional.ofNullable(testItem));
@@ -299,7 +299,7 @@ public class ItemServiceImplTest {
     }
 
     @Test
-    void updateNoNewDataTest() {
+    public void updateNoNewDataTest() {
         testItem.getOwner().setId(1L);
         //для получение существующей записи перед обновлением
         when(itemRepository.findById(anyLong())).thenReturn(Optional.ofNullable(testItem));
@@ -323,7 +323,7 @@ public class ItemServiceImplTest {
     }
 
     @Test
-    void deleteTest() {
+    public void deleteTest() {
         BasicItemContext testContext = BasicItemContext.builder()
                 .targetItemId(1L)
                 .sharerUserId(1L)
@@ -336,7 +336,7 @@ public class ItemServiceImplTest {
     }
 
     @Test
-    void retrieveForExternalTest() {
+    public void retrieveForExternalTest() {
         when(itemRepository.findById(anyLong())).thenReturn(Optional.ofNullable(testItem));
 
         Item testResult = itemService.retrieve(1L);
@@ -348,7 +348,7 @@ public class ItemServiceImplTest {
     }
 
     @Test
-    void retrieveForRequestsIdsTest() {
+    public void retrieveForRequestsIdsTest() {
 
         List<Item> repositoryResult = new ArrayList<>();
         for (int i = 0; i < 10; i++) {

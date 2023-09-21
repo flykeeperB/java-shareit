@@ -53,7 +53,7 @@ class UserServiceImplTest {
     private UserDto testSourceUserDto;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         toUserDtoMapper = new ToUserDtoMapperImpl();
         toUserMapper = new ToUserMapperImpl();
         toUserDtoListMapper = new ToUserDtoListMapperImpl(toUserDtoMapper);
@@ -73,7 +73,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void createTest() {
+    public void createTest() {
         when(userRepository.save(any(User.class))).thenReturn(testSourceUser);
 
         BasicUserContext testContext = BasicUserContext.builder()
@@ -91,7 +91,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void createWithBlankUserNameTest() {
+    public void createWithBlankUserNameTest() {
 
         testSourceUserDto.setName("");
         BasicUserContext testContext = BasicUserContext.builder()
@@ -104,7 +104,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void retrieveTest() {
+    public void retrieveTest() {
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.ofNullable(testSourceUser));
 
@@ -123,7 +123,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void retrieveAllTest() {
+    public void retrieveAllTest() {
 
         when(userRepository.findAll()).thenReturn(List.of(testSourceUser));
 
@@ -142,7 +142,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void updateTest() {
+    public void updateTest() {
 
         testSourceUser.setName("updated");
         testSourceUser.setEmail("aliceUpdated@yandex.ru");
@@ -167,7 +167,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void deleteTest() {
+    public void deleteTest() {
 
         DeleteUserContext testContext = DeleteUserContext.builder()
                 .targetUserId(1L)
@@ -180,7 +180,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void externalRetrieveText() {
+    public void externalRetrieveText() {
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.ofNullable(testSourceUser));
 

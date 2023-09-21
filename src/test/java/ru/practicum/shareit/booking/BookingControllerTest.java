@@ -49,7 +49,7 @@ class BookingControllerTest {
     private BookingExtraDto testBookingExtraDto;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         testBooker = testDataGenerator.generateUser();
         testBookingExtraDto = testDataGenerator.generateBookingDto();
         testBookingDto = testDataGenerator.generateBookingDto();
@@ -58,7 +58,7 @@ class BookingControllerTest {
 
     @SneakyThrows
     @Test
-    void createBookingRequestTest() {
+    public void createBookingRequestTest() {
         when(bookingService.create(any(CreateBookingContext.class))).thenReturn(testBookingExtraDto);
 
         testBookingDto.setId(null);
@@ -82,7 +82,7 @@ class BookingControllerTest {
 
     @SneakyThrows
     @Test
-    void approveBookingRequestTest() {
+    public void approveBookingRequestTest() {
         testBookingExtraDto.setStatus(BookingStatus.APPROVED);
         when(bookingService.approve(any(ApproveBookingContext.class))).thenReturn(testBookingExtraDto);
 
@@ -107,7 +107,7 @@ class BookingControllerTest {
 
     @SneakyThrows
     @Test
-    void retrieveBookingRequestTest() {
+    public void retrieveBookingRequestTest() {
         when(bookingService.retrieve(any(BasicBookingContext.class))).thenReturn(testBookingExtraDto);
 
         mockMvc.perform(get("/bookings/{bookingId}", testBookingExtraDto.getId())
