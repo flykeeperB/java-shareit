@@ -172,7 +172,7 @@ public class TestDataGenerator {
         lastItemId++;
         result.setId(lastItemId);
         String itemName = getRandomStringValue(itemNames);
-        result.setName(itemName+lastItemId);
+        result.setName(itemName + lastItemId);
         result.setDescription("Это отличный " + itemName);
         result.setOwner(generateUserDto());
         result.setAvailable(true);
