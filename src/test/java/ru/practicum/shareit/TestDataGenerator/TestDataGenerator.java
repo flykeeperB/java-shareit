@@ -183,7 +183,9 @@ public class TestDataGenerator {
         result.setStart(bookingMoment);
         result.setEnd(bookingMoment);
         result.setItem(generateItemDto());
+        result.setItemId(result.getItem().getId());
         result.setBooker(generateUserDto());
+        result.setBookerId(result.getBooker().getId());
         result.setStatus(BookingStatus.WAITING);
 
         return result;
