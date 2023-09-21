@@ -51,7 +51,6 @@ class BookingControllerTest {
     private ItemDto testItemDto;
     private BookingDto testBookingDto;
     private BookingExtraDto testBookingExtraDto;
-    private DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSSSSSS");
 
     @BeforeEach
     void setUp() {
@@ -78,9 +77,9 @@ class BookingControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", is(testBookingExtraDto.getId()), Long.class))
                 .andExpect(jsonPath("$.start").value(testBookingExtraDto
-                        .getStart().format(DATE_FORMAT)))
+                        .getStart().toString().replaceAll("0+$", "")))
                 .andExpect(jsonPath("$.end").value(testBookingExtraDto
-                        .getEnd().format(DATE_FORMAT)));
+                        .getEnd().toString().replaceAll("0+$", "")));
 
         verify(bookingService).create(any(CreateBookingContext.class));
         verifyNoMoreInteractions(bookingService);
@@ -104,9 +103,9 @@ class BookingControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", is(testBookingExtraDto.getId()), Long.class))
                 .andExpect(jsonPath("$.start").value(testBookingExtraDto
-                        .getStart().format(DATE_FORMAT)))
+                        .getStart().toString().replaceAll("0+$", "")))
                 .andExpect(jsonPath("$.end").value(testBookingExtraDto
-                        .getEnd().format(DATE_FORMAT)));
+                        .getEnd().toString().replaceAll("0+$", "")));
 
         verify(bookingService).approve(any(ApproveBookingContext.class));
         verifyNoMoreInteractions(bookingService);
@@ -125,9 +124,9 @@ class BookingControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", is(testBookingExtraDto.getId()), Long.class))
                 .andExpect(jsonPath("$.start").value(testBookingExtraDto
-                        .getStart().format(DATE_FORMAT)))
+                        .getStart().toString().replaceAll("0+$", "")))
                 .andExpect(jsonPath("$.end").value(testBookingExtraDto
-                        .getEnd().format(DATE_FORMAT)));
+                        .getEnd().toString().replaceAll("0+$", "")));
 
         verify(bookingService, atLeast(1)).retrieve(any(BasicBookingContext.class));
         verifyNoMoreInteractions(bookingService);
@@ -148,9 +147,9 @@ class BookingControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].id", is(testBookingExtraDto.getId()), Long.class))
                 .andExpect(jsonPath("$[0].start").value(testBookingExtraDto
-                        .getStart().format(DATE_FORMAT)))
+                        .getStart().toString().replaceAll("0+$", "")))
                 .andExpect(jsonPath("$[0].end").value(testBookingExtraDto
-                        .getEnd().format(DATE_FORMAT)));
+                        .getEnd().toString().replaceAll("0+$", "")));
 
         verify(bookingService, atLeast(1)).retrieveForBooker(any(ForStateBookingContext.class));
         verifyNoMoreInteractions(bookingService);
@@ -171,9 +170,9 @@ class BookingControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].id", is(testBookingExtraDto.getId()), Long.class))
                 .andExpect(jsonPath("$[0].start").value(testBookingExtraDto
-                        .getStart().format(DATE_FORMAT)))
+                        .getStart().toString().replaceAll("0+$", "")))
                 .andExpect(jsonPath("$[0].end").value(testBookingExtraDto
-                        .getEnd().format(DATE_FORMAT)));
+                        .getEnd().toString().replaceAll("0+$", "")));
 
         verify(bookingService, atLeast(1)).retrieveForItemsOwner(any(ForStateBookingContext.class));
         verifyNoMoreInteractions(bookingService);
