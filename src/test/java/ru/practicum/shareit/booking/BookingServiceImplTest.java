@@ -178,9 +178,6 @@ public class BookingServiceImplTest {
     @Test
     public void retrieveAllTest() {
         when(bookingRepository.findAll()).thenReturn(List.of(testBooking));
-        when(bookingRepository.save(any(Booking.class))).thenReturn(testBooking);
-        User testUser = testDataGenerator.generateUser();
-        when(userService.retrieve(anyLong())).thenReturn(testUser);
 
         List<BookingExtraDto> testResult = bookingService.retrieve();
 
