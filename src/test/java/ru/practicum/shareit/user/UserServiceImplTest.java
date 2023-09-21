@@ -66,7 +66,7 @@ class UserServiceImplTest {
                 toUserDtoListMapper,
                 userNullityValidator,
                 userNotBlankNameValidator
-                );
+        );
 
         testSourceUser = new User(1L, "alice", "alice@yandex.ru");
         testSourceUserDto = new UserDto(1L, "alice", "alice@yandex.ru");
@@ -132,7 +132,7 @@ class UserServiceImplTest {
         List<UserDto> testResultUser = userService.retrieve();
 
         assertNotNull(testResultUser, "Не возвращается результат создания записи.");
-        assertEquals(1, testResultUser.size(),"Неверное количество записей в результате");
+        assertEquals(1, testResultUser.size(), "Неверное количество записей в результате");
 
         UserDto oneTestResultUser = testResultUser.get(0);
 

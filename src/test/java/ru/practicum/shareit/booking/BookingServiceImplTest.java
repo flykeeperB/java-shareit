@@ -34,7 +34,6 @@ import ru.practicum.shareit.item.mapping.impl.ToCommentDtoMapperImpl;
 import ru.practicum.shareit.item.mapping.impl.ToItemDtoMapperImpl;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ExternalItemService;
-import ru.practicum.shareit.user.contexts.RetrieveUserContext;
 import ru.practicum.shareit.user.mapping.ToUserDtoMapper;
 import ru.practicum.shareit.user.mapping.impl.ToUserDtoMapperImpl;
 import ru.practicum.shareit.user.model.User;
@@ -56,7 +55,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class BookingServiceImplTest {
 
-    private TestDataGenerator testDataGenerator = new TestDataGenerator();
+    private final TestDataGenerator testDataGenerator = new TestDataGenerator();
 
     private BookingServiceImpl bookingService;
 
@@ -176,15 +175,12 @@ public class BookingServiceImplTest {
                 .findById(anyLong());
     }
 
+    @Test
     public void retrieveAllTest() {
         when(bookingRepository.findAll()).thenReturn(List.of(testBooking));
         when(bookingRepository.save(any(Booking.class))).thenReturn(testBooking);
         User testUser = testDataGenerator.generateUser();
         when(userService.retrieve(anyLong())).thenReturn(testUser);
-
-        RetrieveUserContext testContext = RetrieveUserContext.builder()
-                .targetUserId(1L)
-                .build();
 
         List<BookingExtraDto> testResult = bookingService.retrieve();
 

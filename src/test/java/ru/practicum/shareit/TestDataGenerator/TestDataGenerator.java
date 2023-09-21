@@ -1,11 +1,15 @@
 package ru.practicum.shareit.TestDataGenerator;
 
-import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingExtraDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.dto.CreateItemRequestDto;
+import ru.practicum.shareit.request.dto.ItemRequestDto;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
@@ -23,7 +27,8 @@ public class TestDataGenerator {
     public Long lastUserId = 0L;
     public Long lastItemId = 0L;
     public Long lastBookingId = 0L;
-    public Long lastRequestId = 0L;
+    public Long lastCommentId = 0L;
+    public Long lastItemRequestId = 0L;
 
     public TestDataGenerator() {
         firstNames = new HashMap<>();
@@ -181,6 +186,55 @@ public class TestDataGenerator {
         result.setBooker(generateUserDto());
         result.setStatus(BookingStatus.WAITING);
 
+        return result;
+    }
+
+    public CommentDto generateCommentDto() {
+        CommentDto result = new CommentDto();
+
+        lastCommentId++;
+        result.setText("отличный комментарий " + lastCommentId);
+
+        return result;
+    }
+
+    public Comment generateComment() {
+        Comment result = new Comment();
+
+        lastCommentId++;
+        result.setId(lastCommentId);
+        result.setAuthor(generateUser());
+        result.setItem(generateItem());
+        int createTime = (int) (10000 * Math.random());
+        result.setCreated(LocalDateTime.now().minusMinutes(createTime));
+        result.setText("отличный комментарий " + lastCommentId);
+
+        return result;
+    }
+
+    public ItemRequest generateItemRequest() {
+        ItemRequest result = new ItemRequest();
+
+        lastItemRequestId++;
+        result.setId(lastItemRequestId);
+        result.setDescription("хотелось взять напрокат " + getRandomStringValue(itemNames));
+        result.setRequestor(generateUser());
+        int createTime = (int) (10000 * Math.random());
+        result.setCreated(LocalDateTime.now().minusMinutes(createTime));
+
+        return result;
+    }
+
+    public ItemRequestDto generateItemRequestDto() {
+        ItemRequestDto result = new ItemRequestDto();
+        result.setRequestor(generateUserDto());
+        result.setDescription("хотелось взять напрокат " + getRandomStringValue(itemNames));
+        return result;
+    }
+
+    public CreateItemRequestDto generateCreateItemRequestDto() {
+        CreateItemRequestDto result = new CreateItemRequestDto();
+        result.setDescription("хотелось взять напрокат " + getRandomStringValue(itemNames));
         return result;
     }
 
