@@ -2,6 +2,7 @@ package ru.practicum.shareit.request;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.CreateItemRequestDto;
@@ -27,6 +28,7 @@ public class ItemRequestController {
     private final ControllerItemRequestService service;
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public ItemRequestDto create(@Valid @RequestBody CreateItemRequestDto createItemRequestDto,
                                  @RequestHeader(name = "X-Sharer-User-Id") Long userId) {
         log.info("создание запроса о предоставлении вещи");

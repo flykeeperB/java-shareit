@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = BookingController.class)
 class BookingControllerTest {
 
-    TestDataGenerator testDataGenerator = new TestDataGenerator();
+    private final TestDataGenerator testDataGenerator = new TestDataGenerator();
 
     @Autowired
     private MockMvc mockMvc;
@@ -46,16 +46,12 @@ class BookingControllerTest {
     private ControllerBookingService bookingService;
 
     private User testBooker;
-    private User testUser;
-    private ItemDto testItemDto;
     private BookingDto testBookingDto;
     private BookingExtraDto testBookingExtraDto;
 
     @BeforeEach
     void setUp() {
         testBooker = testDataGenerator.generateUser();
-        testUser = testDataGenerator.generateUser();
-        testItemDto = testDataGenerator.generateItemDto();
         testBookingExtraDto = testDataGenerator.generateBookingDto();
         testBookingDto = testDataGenerator.generateBookingDto();
     }
