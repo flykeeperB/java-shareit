@@ -10,6 +10,6 @@ import javax.validation.constraints.NotBlank;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreateItemRequestDto {
-    @NotBlank(message = "Не указано описание запроса о предоставлении вещи")
+
     private String description;
 }

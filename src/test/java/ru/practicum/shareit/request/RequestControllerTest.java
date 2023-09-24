@@ -10,20 +10,17 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.TestDataGenerator.TestDataGenerator;
-import ru.practicum.shareit.request.contexts.CreateItemRequestContext;
 import ru.practicum.shareit.request.contexts.RetrieveItemRequestContext;
 import ru.practicum.shareit.request.contexts.RetrieveItemRequestsContext;
 import ru.practicum.shareit.request.contexts.RetrieveItemRequestsForUserContext;
 import ru.practicum.shareit.request.dto.ExtraItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
-import ru.practicum.shareit.request.model.ItemRequest;
-import ru.practicum.shareit.request.service.ControllerItemRequestService;
+import ru.practicum.shareit.request.service.ItemRequestService;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -42,15 +39,13 @@ public class RequestControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private ControllerItemRequestService itemRequestService;
+    private ItemRequestService itemRequestService;
 
-    private ItemRequest testItemRequest;
     private ItemRequestDto testItemRequestDto;
     private ExtraItemRequestDto testExtraItemRequestDto;
 
     @BeforeEach
     public void setUp() {
-        testItemRequest = testDataGenerator.generateItemRequest();
         testItemRequestDto = testDataGenerator.generateItemRequestDto();
         testExtraItemRequestDto = testDataGenerator.generateExtraItemRequestDto();
     }
@@ -58,11 +53,13 @@ public class RequestControllerTest {
     @SneakyThrows
     @Test
     public void createRequestTest() {
-        when(itemRequestService.create(any(CreateItemRequestContext.class))).thenReturn(testItemRequestDto);
+        ItemRequestDto itemRequestDto = testDataGenerator.generateItemRequestDto();
+        when(itemRequestService.create(argThat(argument -> argument.getItemRequestDto()
+                .getDescription().equals(itemRequestDto.getDescription())))).thenReturn(testItemRequestDto);
 
         mockMvc.perform(post("/requests")
                         .content(objectMapper
-                                .writeValueAsString(testDataGenerator.generateItemRequestWithOnlyTextDto()))
+                                .writeValueAsString(itemRequestDto))
                         .header("X-Sharer-User-Id", 1L)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -72,14 +69,16 @@ public class RequestControllerTest {
                 .andExpect(jsonPath("$.id", is(testItemRequestDto.getId()), Long.class))
                 .andExpect(jsonPath("$.description").value(testItemRequestDto.getDescription()));
 
-        verify(itemRequestService).create(any(CreateItemRequestContext.class));
+        verify(itemRequestService).create(
+                argThat(argument -> argument.getItemRequestDto().equals(itemRequestDto)));
         verifyNoMoreInteractions(itemRequestService);
     }
 
     @SneakyThrows
     @Test
     public void retrieveRequestsOfUserTest() {
-        when(itemRequestService.retrieve(any(RetrieveItemRequestsForUserContext.class)))
+        when(itemRequestService.retrieve(
+                argThat((RetrieveItemRequestsForUserContext argument) -> argument.getSharerUserId().equals(1L))))
                 .thenReturn(List.of(testExtraItemRequestDto));
 
         mockMvc.perform(get("/requests")
@@ -92,14 +91,16 @@ public class RequestControllerTest {
                 .andExpect(jsonPath("$[0].id", is(testExtraItemRequestDto.getId()), Long.class))
                 .andExpect(jsonPath("$[0].description").value(testExtraItemRequestDto.getDescription()));
 
-        verify(itemRequestService).retrieve(any(RetrieveItemRequestsForUserContext.class));
+        verify(itemRequestService).retrieve(
+                argThat((RetrieveItemRequestsForUserContext argument) -> argument.getSharerUserId().equals(1L)));
         verifyNoMoreInteractions(itemRequestService);
     }
 
     @SneakyThrows
     @Test
     public void retrieveAllRequestsTest() {
-        when(itemRequestService.retrieve(any(RetrieveItemRequestsContext.class)))
+        when(itemRequestService.retrieve(
+                argThat((RetrieveItemRequestsContext argument) -> argument.getSharerUserId().equals(1L))))
                 .thenReturn(List.of(testExtraItemRequestDto));
 
         mockMvc.perform(get("/requests/all")
@@ -114,14 +115,19 @@ public class RequestControllerTest {
                 .andExpect(jsonPath("$[0].id", is(testExtraItemRequestDto.getId()), Long.class))
                 .andExpect(jsonPath("$[0].description").value(testExtraItemRequestDto.getDescription()));
 
-        verify(itemRequestService).retrieve(any(RetrieveItemRequestsContext.class));
+        verify(itemRequestService).retrieve(
+                argThat((RetrieveItemRequestsContext argument) -> argument.getSharerUserId().equals(1L))
+        );
         verifyNoMoreInteractions(itemRequestService);
     }
 
     @SneakyThrows
     @Test
     public void retrieveOneRequestTest() {
-        when(itemRequestService.retrieve(any(RetrieveItemRequestContext.class))).thenReturn(testExtraItemRequestDto);
+        when(itemRequestService.retrieve(
+                        argThat((RetrieveItemRequestContext argument) -> argument.getSharerUserId().equals(1L))
+                )
+        ).thenReturn(testExtraItemRequestDto);
 
         mockMvc.perform(get("/requests/1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -133,7 +139,7 @@ public class RequestControllerTest {
                 .andExpect(jsonPath("$.id", is(testExtraItemRequestDto.getId()), Long.class))
                 .andExpect(jsonPath("$.description").value(testExtraItemRequestDto.getDescription()));
 
-        verify(itemRequestService).retrieve(any(RetrieveItemRequestContext.class));
+        verify(itemRequestService).retrieve(argThat((RetrieveItemRequestContext argument) -> argument.getSharerUserId().equals(1L)));
         verifyNoMoreInteractions(itemRequestService);
     }
 

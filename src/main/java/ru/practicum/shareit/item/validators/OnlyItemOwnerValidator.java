@@ -1,7 +1,7 @@
 package ru.practicum.shareit.item.validators;
 
-import ru.practicum.shareit.item.contexts.UpdateItemContext;
+import ru.practicum.shareit.item.model.Item;
 
 public interface OnlyItemOwnerValidator {
-    void validate(UpdateItemContext context);
+    void validate(Long sharerUserId, Item oldItem);
 }

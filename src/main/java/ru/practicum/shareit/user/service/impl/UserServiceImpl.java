@@ -5,9 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.user.mapping.ToUserDtoListMapper;
-import ru.practicum.shareit.user.mapping.ToUserDtoMapper;
-import ru.practicum.shareit.user.mapping.ToUserMapper;
+import ru.practicum.shareit.user.mapping.UserMapper;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
@@ -15,8 +13,7 @@ import ru.practicum.shareit.user.contexts.BasicUserContext;
 import ru.practicum.shareit.user.contexts.DeleteUserContext;
 import ru.practicum.shareit.user.contexts.RetrieveUserContext;
 import ru.practicum.shareit.user.contexts.UpdateUserContext;
-import ru.practicum.shareit.user.service.ControllerUserService;
-import ru.practicum.shareit.user.service.ExternalUserService;
+import ru.practicum.shareit.user.service.UserService;
 import ru.practicum.shareit.user.validators.UserNotBlankNameValidator;
 import ru.practicum.shareit.user.validators.UserNullityValidator;
 
@@ -26,13 +23,11 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements ControllerUserService, ExternalUserService {
+public class UserServiceImpl implements UserService {
 
     private final UserRepository repository;
 
-    private final ToUserDtoMapper toUserDtoMapper;
-    private final ToUserMapper toUserMapper;
-    private final ToUserDtoListMapper toUserDtoListMapper;
+    private final UserMapper userMapper;
 
     private final UserNullityValidator userNullityValidator;
     private final UserNotBlankNameValidator userNotBlankNameValidator;
@@ -44,9 +39,9 @@ public class UserServiceImpl implements ControllerUserService, ExternalUserServi
 
         userNotBlankNameValidator.validate(context);
 
-        User user = toUserMapper.map(context.getUserDto());
+        User user = userMapper.mapToUser(context.getUserDto());
 
-        return toUserDtoMapper.map(repository.save(user));
+        return userMapper.mapToUserDto(repository.save(user));
     }
 
     @Override
@@ -56,7 +51,7 @@ public class UserServiceImpl implements ControllerUserService, ExternalUserServi
 
         User user = retrieve(context.getTargetUserId());
 
-        return toUserDtoMapper.map(user);
+        return userMapper.mapToUserDto(user);
     }
 
     @Override
@@ -64,7 +59,7 @@ public class UserServiceImpl implements ControllerUserService, ExternalUserServi
     public List<UserDto> retrieve() {
         log.info("получение записей");
 
-        return toUserDtoListMapper.map(repository.findAll());
+        return userMapper.mapToUserDto(repository.findAll());
     }
 
     @Override
@@ -75,14 +70,14 @@ public class UserServiceImpl implements ControllerUserService, ExternalUserServi
         User target = retrieve(context.getTargetUserId());
 
         if (context.getUserDto() == null) {
-            return toUserDtoMapper.map(retrieve(context.getTargetUserId()));
+            return userMapper.mapToUserDto(retrieve(context.getTargetUserId()));
         }
 
-        User source = toUserMapper.map(context.getUserDto());
+        User source = userMapper.mapToUser(context.getUserDto());
 
         patch(source, target);
 
-        return toUserDtoMapper.map(repository.save(target));
+        return userMapper.mapToUserDto(repository.save(target));
     }
 
     @Override
@@ -93,9 +88,8 @@ public class UserServiceImpl implements ControllerUserService, ExternalUserServi
         repository.deleteById(context.getTargetUserId());
     }
 
-    @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public User retrieve(Long id) {
+    private User retrieve(Long id) {
         Optional<User> result = repository.findById(id);
 
         userNullityValidator.validate(result);

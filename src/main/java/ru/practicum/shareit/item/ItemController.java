@@ -9,7 +9,7 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemExtraDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.contexts.*;
-import ru.practicum.shareit.item.service.ControllerItemService;
+import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -22,7 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ItemController {
 
-    private final ControllerItemService service;
+    private final ItemService service;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -53,7 +53,7 @@ public class ItemController {
 
     @GetMapping
     public List<ItemExtraDto> retrieveForOwner(@RequestParam(defaultValue = "0") @Min(0) Integer from,
-                                               @RequestParam(defaultValue = "15") @Min(0) Integer size,
+                                               @RequestParam(defaultValue = "15") @Min(1) Integer size,
                                                @RequestHeader(name = "X-Sharer-User-Id") Long userId) {
         log.info("получение записи о вещах по владельцу");
 
@@ -69,9 +69,9 @@ public class ItemController {
 
     @GetMapping("/search")
     public List<ItemDto> retrieveAvailableForSearchText(@RequestParam(defaultValue = "0") @Min(0) Integer from,
-                                                  @RequestParam(defaultValue = "15") @Min(0) Integer size,
-                                                  @RequestParam String text,
-                                                  @RequestHeader(name = "X-Sharer-User-Id") Long userId) {
+                                                        @RequestParam(defaultValue = "15") @Min(1) Integer size,
+                                                        @RequestParam String text,
+                                                        @RequestHeader(name = "X-Sharer-User-Id") Long userId) {
         log.info("поиск вещей по тексту в наименовании или описании");
 
         RetrieveAvailableForSearchTextContext request = RetrieveAvailableForSearchTextContext.builder()

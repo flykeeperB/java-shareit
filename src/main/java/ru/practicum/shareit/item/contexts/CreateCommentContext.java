@@ -12,6 +12,4 @@ import java.util.List;
 @SuperBuilder
 public class CreateCommentContext extends BasicItemContext {
     private final CommentDto comment;
-    private Item item;
-    private List<Booking> successfulBookings;
 }

@@ -2,16 +2,16 @@ package ru.practicum.shareit.item.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.mapping.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.service.ExternalBookingService;
+import ru.practicum.shareit.booking.model.BookingStatus;
+import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.booking.service.impl.TypesOfBookingConnectionToItem;
-import ru.practicum.shareit.core.validators.SharerUserValidator;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -22,64 +22,51 @@ import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.contexts.*;
-import ru.practicum.shareit.item.service.ControllerItemService;
-import ru.practicum.shareit.item.service.ExternalItemService;
+import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.item.validators.BookerValidator;
 import ru.practicum.shareit.item.validators.OnlyItemOwnerValidator;
-import ru.practicum.shareit.request.service.ExternalItemRequestService;
-import ru.practicum.shareit.user.service.ExternalUserService;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
+import ru.practicum.shareit.user.mapping.UserMapper;
+import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ItemServiceImpl implements ExternalItemService, ControllerItemService {
+public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository repository;
+    private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
-    private final ToItemDtoMapper toItemDtoMapper;
-    private final ToItemExtraDtoMapper toItemExtraDtoMapper;
-    private final ToItemMapper toItemMapper;
-    private final ToCommentMapper toCommentMapper;
-    private final ToCommentDtoMapper toCommentDtoMapper;
+    private final ItemMapper itemMapper;
+    private final BookingMapper bookingMapper;
+    private final UserMapper userMapper;
 
     private final OnlyItemOwnerValidator onlyItemOwnerValidator;
     private final BookerValidator bookerValidator;
-    private final SharerUserValidator sharerUserValidator;
-
-    @Lazy
-    private final ExternalUserService userService;
-
-    @Lazy
-    private final ExternalBookingService bookingService;
-
-    @Lazy
-    private final ExternalItemRequestService itemRequestService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
     public ItemDto create(CreateItemContext context) {
 
-        context.setSharerUser(userService.retrieve(context.getSharerUserId()));
+        User sharerUser = retrieveUser(context.getSharerUserId());
 
+        ItemRequest itemRequest = null;
         if (context.getItemDto().getRequestId() != null) {
-            context.setItemRequest(
-                    itemRequestService.retrieve(context.getItemDto().getRequestId())
-            );
+            itemRequest = retrieveItemRequest(context.getItemDto().getRequestId());
         }
 
-        sharerUserValidator.validate(context);
+        Item item = itemMapper.mapToItem(context.getItemDto(), sharerUser, itemRequest);
 
-        Item item = toItemMapper.map(context);
-
-        return toItemDtoMapper.map(repository.save(item));
+        return itemMapper.mapToItemDto(repository.save(item));
     }
 
     @Override
@@ -87,9 +74,11 @@ public class ItemServiceImpl implements ExternalItemService, ControllerItemServi
     public ItemDto update(UpdateItemContext context) {
         log.info("обновление записи");
 
-        context.setOldItem(retrieve(context.getTargetItemId()));
+        User sharerUser = retrieveUser(context.getSharerUserId());
 
-        onlyItemOwnerValidator.validate(context);
+        Item oldItem = retrieve(context.getTargetItemId());
+
+        onlyItemOwnerValidator.validate(context.getSharerUserId(), oldItem);
 
         //Если не переданы новые данные для обновления, просто возвращаем запись
         if (context.getItemDto() == null) {
@@ -101,11 +90,16 @@ public class ItemServiceImpl implements ExternalItemService, ControllerItemServi
             return retrieve(request);
         }
 
-        Item newDataForItem = toItemMapper.map(context);
+        ItemRequest itemRequest = null;
+        if (context.getItemDto().getRequestId() != null) {
+            itemRequest = retrieveItemRequest(context.getItemDto().getRequestId());
+        }
 
-        Item newItem = patch(newDataForItem, context.getOldItem());
+        Item newDataForItem = itemMapper.mapToItem(context.getItemDto(), sharerUser, itemRequest);
 
-        return toItemDtoMapper.map(repository.save(newItem));
+        Item newItem = patch(newDataForItem, oldItem);
+
+        return itemMapper.mapToItemDto(repository.save(newItem));
     }
 
     @Override
@@ -128,11 +122,14 @@ public class ItemServiceImpl implements ExternalItemService, ControllerItemServi
 
         ItemExtraDto result = new ItemExtraDto();
 
-        toItemDtoMapper.map(item, result);
+        itemMapper.mapToItemDto(item, result);
+        result.setOwner(userMapper.mapToUserDto(item.getOwner()));
 
         if (context.getSharerUserId()
                 .equals(item.getOwner().getId())) {
-            toItemExtraDtoMapper.map(item, result);
+            itemMapper.mapToItemExtraDto(item, result);
+            result.setNextBooking(bookingMapper.mapToBookingDto(item.getNextBooking()));
+            result.setLastBooking(bookingMapper.mapToBookingDto(item.getLastBooking()));
         }
 
         return result;
@@ -153,7 +150,7 @@ public class ItemServiceImpl implements ExternalItemService, ControllerItemServi
 
         setBookingsForItems(result);
 
-        return toItemExtraDtoMapper.map(result);
+        return itemMapper.mapToItemExtraDto(result, bookingMapper);
     }
 
     @Override
@@ -174,7 +171,7 @@ public class ItemServiceImpl implements ExternalItemService, ControllerItemServi
                 pageable
         );
 
-        return toItemDtoMapper.map(result);
+        return itemMapper.mapToItemDto(result);
     }
 
     @Override
@@ -182,20 +179,25 @@ public class ItemServiceImpl implements ExternalItemService, ControllerItemServi
     public CommentDto createComment(CreateCommentContext context) {
         log.info("добавление комментария");
 
-        context.setSharerUser(userService.retrieve(context.getSharerUserId()));
+        User sharerUser = retrieveUser(context.getSharerUserId());
+        Item item = retrieve(context.getTargetItemId());
 
-        context.setSuccessfulBookings(bookingService
-                .retrieveSuccessfulBookings(context.getSharerUserId()));
+        List<Booking> bookings = bookingRepository
+                .findByBookerIdAndStatusAndEndBefore(context.getSharerUserId(),
+                        BookingStatus.APPROVED,
+                        LocalDateTime.now());
 
-        bookerValidator.validate(context);
+        bookerValidator.validate(context.getSharerUserId(), bookings);
 
-        context.setItem(retrieve(context.getTargetItemId()));
-
-        Comment comment = toCommentMapper.map(context);
+        Comment comment = itemMapper.mapToComment(context.getComment(),
+                sharerUser,
+                item);
 
         comment.setCreated(LocalDateTime.now());
 
-        return toCommentDtoMapper.map(commentRepository.save(comment));
+        Comment result = commentRepository.save(comment);
+
+        return itemMapper.mapToCommentDto(result);
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
@@ -207,27 +209,94 @@ public class ItemServiceImpl implements ExternalItemService, ControllerItemServi
         return result.get();
     }
 
-    @Override
-    @Transactional(propagation = Propagation.REQUIRED)
-    public Map<Long, List<Item>> retrieveForRequestsIds(List<Long> ids) {
-        List<Item> items = repository.findByRequestIdInOrderByRequestId(ids);
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
+    private Map<TypesOfBookingConnectionToItem, Booking> retrieveBookingForItem(Long itemId) {
+        Map<TypesOfBookingConnectionToItem, Booking> result = new HashMap<>();
+        LocalDateTime nowTime = LocalDateTime.now();
+        List<Booking> bookings;
 
-        return items.stream().collect(Collectors.groupingBy(item -> item.getRequest().getId()));
+        bookings = bookingRepository.findByItemIdAndStatusAndStartBeforeOrderByEndDesc(itemId,
+                BookingStatus.APPROVED,
+                nowTime);
+
+        if (bookings.size() > 0) {
+            result.put(TypesOfBookingConnectionToItem.LAST, bookings.get(0));
+        }
+
+        bookings = bookingRepository.findFirstByItemIdAndStatusAndStartAfterOrderByStart(itemId,
+                BookingStatus.APPROVED,
+                nowTime);
+
+        if (bookings.size() > 0) {
+            result.put(TypesOfBookingConnectionToItem.NEXT, bookings.get(0));
+        }
+
+        return result;
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
+    private Map<Long, Map<TypesOfBookingConnectionToItem, Booking>> retrieveBookingsForItems(List<Long> ids) {
+        Map<Long, Map<TypesOfBookingConnectionToItem, Booking>> result = new HashMap<>();
+        LocalDateTime nowTime = LocalDateTime.now();
+
+        groupBookingsByItems(result,
+                bookingRepository.findLastBookingsForItems(ids,
+                        BookingStatus.APPROVED,
+                        nowTime),
+                TypesOfBookingConnectionToItem.LAST);
+
+        groupBookingsByItems(result,
+                bookingRepository.findNextBookingsForItems(ids,
+                        BookingStatus.APPROVED,
+                        nowTime),
+                TypesOfBookingConnectionToItem.NEXT);
+
+        return result;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    private ItemRequest retrieveItemRequest(Long id) {
+        Optional<ItemRequest> result = itemRequestRepository.findById(id);
+
+        result.orElseThrow(() -> new NotFoundException("запись не найдена"));
+
+        return result.get();
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    private void groupBookingsByItems(Map<Long, Map<TypesOfBookingConnectionToItem, Booking>> bookingByItemsId,
+                                      List<Booking> bookings,
+                                      TypesOfBookingConnectionToItem type) {
+        if (bookings.size() > 0) {
+            Long lastItemId = -1L;
+            for (Booking booking : bookings) {
+                Long itemId = booking.getItem().getId();
+
+                if (!itemId.equals(lastItemId)) {
+                    Map<TypesOfBookingConnectionToItem, Booking> bookingsForOneItem =
+                            bookingByItemsId.getOrDefault(itemId, new HashMap<>());
+                    bookingsForOneItem.put(type, booking);
+                    bookingByItemsId.put(itemId, bookingsForOneItem);
+                }
+            }
+        }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
     private void setBookingsForItem(Item target) {
         Map<TypesOfBookingConnectionToItem, Booking> bookings;
 
-        bookings = bookingService.retrieveForItem(target.getId());
+        bookings = retrieveBookingForItem(target.getId());
 
         target.setLastBooking(bookings.get(TypesOfBookingConnectionToItem.LAST));
         target.setNextBooking(bookings.get(TypesOfBookingConnectionToItem.NEXT));
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
     private void setBookingsForItems(List<Item> target) {
         Map<Long, Map<TypesOfBookingConnectionToItem, Booking>> bookingsByItems;
 
-        bookingsByItems = bookingService.retrieveForItems(target.stream()
+        bookingsByItems = retrieveBookingsForItems(target.stream()
                 .map(Item::getId)
                 .collect(Collectors.toList()));
 
@@ -241,10 +310,12 @@ public class ItemServiceImpl implements ExternalItemService, ControllerItemServi
 
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
     private void setCommentsForItem(Item item) {
         item.setComments(commentRepository.findByItemId(item.getId()));
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
     private Item patch(Item source, Item target) {
 
         if (source.getId() != null) {
@@ -264,5 +335,14 @@ public class ItemServiceImpl implements ExternalItemService, ControllerItemServi
         }
 
         return target;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    private User retrieveUser(Long id) {
+        Optional<User> result = userRepository.findById(id);
+
+        result.orElseThrow(() -> new NotFoundException("запись о пользователе не найдена"));
+
+        return result.get();
     }
 }

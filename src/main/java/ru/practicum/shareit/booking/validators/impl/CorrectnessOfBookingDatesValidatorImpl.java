@@ -2,7 +2,6 @@ package ru.practicum.shareit.booking.validators.impl;
 
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.dto.BookingExtraDto;
-import ru.practicum.shareit.booking.contexts.CreateBookingContext;
 import ru.practicum.shareit.booking.validators.CorrectnessOfBookingDatesValidator;
 import ru.practicum.shareit.exception.ValidationException;
 
@@ -12,8 +11,7 @@ import java.time.LocalDateTime;
 public class CorrectnessOfBookingDatesValidatorImpl implements CorrectnessOfBookingDatesValidator {
 
     @Override
-    public void validate(CreateBookingContext context) {
-        BookingExtraDto bookingExtraDto = context.getBookingExtraDto();
+    public void validate(BookingExtraDto bookingExtraDto) {
 
         if (bookingExtraDto.getStart().isAfter(bookingExtraDto.getEnd())) {
             throw new ValidationException("неправильные даты начала и окончания бронирования " +

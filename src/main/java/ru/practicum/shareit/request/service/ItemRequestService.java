@@ -9,7 +9,7 @@ import ru.practicum.shareit.request.contexts.RetrieveItemRequestsContext;
 
 import java.util.List;
 
-public interface ControllerItemRequestService {
+public interface ItemRequestService {
 
     ItemRequestDto create(CreateItemRequestContext context);
 

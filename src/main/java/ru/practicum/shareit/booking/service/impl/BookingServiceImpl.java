@@ -2,28 +2,28 @@ package ru.practicum.shareit.booking.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.booking.mapping.ToBookingExtraDtoMapper;
-import ru.practicum.shareit.booking.mapping.ToBookingMapper;
+import ru.practicum.shareit.booking.mapping.BookingMapper;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingExtraDto;
 import ru.practicum.shareit.booking.dto.State;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.contexts.*;
-import ru.practicum.shareit.booking.service.ControllerBookingService;
-import ru.practicum.shareit.booking.service.ExternalBookingService;
+import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.booking.validators.*;
-import ru.practicum.shareit.core.validators.SharerUserValidator;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.item.service.ExternalItemService;
-import ru.practicum.shareit.user.service.ExternalUserService;
+import ru.practicum.shareit.item.mapping.ItemMapper;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.user.mapping.UserMapper;
+import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -31,47 +31,46 @@ import java.util.*;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class BookingServiceImpl implements ControllerBookingService, ExternalBookingService {
+public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
+    private final UserRepository userRepository;
+    private final ItemRepository itemRepository;
+
+    private final BookingMapper bookingMapper;
+    private final UserMapper userMapper;
+    private final ItemMapper itemMapper;
 
     private final AvailabilityForBookingValidator availabilityForBookingValidator;
     private final CorrectnessOfBookingDatesValidator correctnessOfBookingDatesValidator;
-    private final SharerUserValidator sharerUserValidator;
     private final RelatedToBookedItemUserValidator relatedToBookedItemUserValidator;
     private final OwnerOfBookedItemValidator ownerOfBookedItemValidator;
     private final AlreadyApprovedBookingValidator alreadyApprovedBookingValidator;
-
-    private final ToBookingMapper toBookingMapper;
-    private final ToBookingExtraDtoMapper toBookingExtraDtoMapper;
-
-    @Lazy
-    private final ExternalUserService userService;
-
-    @Lazy
-    private final ExternalItemService itemService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public BookingExtraDto create(CreateBookingContext context) {
         log.info("создание записи");
 
-        context.setSharerUser(userService.retrieve(context.getSharerUserId()));
+        User sharerUser = retrieveUser(context.getSharerUserId());
 
-        sharerUserValidator.validate(context);
+        Item item = retrieveItem(context.getBookingExtraDto().getItemId());
 
-        context.setItem(itemService.retrieve(context.getBookingExtraDto().getItemId()));
-
-        availabilityForBookingValidator.validate(context);
-        correctnessOfBookingDatesValidator.validate(context);
+        availabilityForBookingValidator.validate(context.getSharerUserId(), item);
+        correctnessOfBookingDatesValidator.validate(context.getBookingExtraDto());
 
         context.getBookingExtraDto().setBookerId(context.getSharerUserId());
 
-        Booking booking = toBookingMapper.map(context);
+        Booking booking = bookingMapper.mapToBooking(context.getBookingExtraDto(), sharerUser, item);
 
         Booking newBooking = bookingRepository.save(booking);
 
-        return toBookingExtraDtoMapper.map(newBooking);
+        BookingExtraDto result = bookingMapper.mapToBookingExtraDto(newBooking);
+
+        result.setBooker(userMapper.mapToUserDto(newBooking.getBooker()));
+        result.setItem(itemMapper.mapToItemDto(newBooking.getItem()));
+
+        return result;
     }
 
     @Override
@@ -79,69 +78,77 @@ public class BookingServiceImpl implements ControllerBookingService, ExternalBoo
     public List<BookingExtraDto> retrieveForBooker(ForStateBookingContext context) {
         log.info("получение сведений о бронированиях для отдельного пользователя");
 
-        Long bookerId = context.getSharerUserId();
-        context.setSharerUser(userService.retrieve(bookerId));
+        retrieveUser(context.getSharerUserId()); //выбросит исключение, если пользователь не найден
 
-        sharerUserValidator.validate(context);
+        Long bookerId = context.getSharerUserId();
+
         Pageable pageable = PageRequest.of(context.getFrom() / context.getSize(),
                 context.getSize());
 
         State state = context.getState();
 
-        List<Booking> result;
+        List<Booking> bookings;
         LocalDateTime nowTime = LocalDateTime.now();
         switch (state) {
             case PAST:
-                result = bookingRepository
+                bookings = bookingRepository
                         .findByBookerIdAndEndBeforeOrderByStartDesc(bookerId,
                                 nowTime,
                                 pageable);
                 break;
             case FUTURE:
-                result = bookingRepository
+                bookings = bookingRepository
                         .findByBookerIdAndStartAfterOrderByStartDesc(bookerId,
                                 nowTime,
                                 pageable);
                 break;
             case CURRENT:
-                result = bookingRepository
+                bookings = bookingRepository
                         .findByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(bookerId,
                                 nowTime, nowTime,
                                 pageable);
                 break;
             case WAITING:
-                result = bookingRepository
+                bookings = bookingRepository
                         .findByBookerIdAndStatusOrderByStartDesc(bookerId,
                                 BookingStatus.WAITING,
                                 pageable);
                 break;
             case REJECTED:
-                result = bookingRepository
+                bookings = bookingRepository
                         .findByBookerIdAndStatusOrderByStartDesc(bookerId,
                                 BookingStatus.REJECTED,
                                 pageable);
                 break;
             case STARTED:
-                result = bookingRepository
+                bookings = bookingRepository
                         .findByBookerIdAndStatusAndStartBefore(bookerId,
                                 BookingStatus.APPROVED,
                                 nowTime,
                                 pageable);
                 break;
             case COMPLETED:
-                result = bookingRepository
+                bookings = bookingRepository
                         .findByBookerIdAndStatusAndEndBefore(bookerId,
                                 BookingStatus.APPROVED,
                                 nowTime,
                                 pageable);
                 break;
             default:
-                result = bookingRepository
+                bookings = bookingRepository
                         .findByBookerIdOrderByStartDesc(bookerId, pageable);
                 break;
         }
 
-        return toBookingExtraDtoMapper.map(result);
+        List<BookingExtraDto> result = new ArrayList<>();
+        for (Booking booking : bookings) {
+            BookingExtraDto bookingExtraDto = bookingMapper.mapToBookingExtraDto(booking);
+            bookingExtraDto.setBooker(userMapper.mapToUserDto(booking.getBooker()));
+            bookingExtraDto.setItem(itemMapper.mapToItemDto(booking.getItem()));
+            result.add(bookingExtraDto);
+        }
+
+        return result;
     }
 
     @Override
@@ -149,117 +156,77 @@ public class BookingServiceImpl implements ControllerBookingService, ExternalBoo
     public List<BookingExtraDto> retrieveForItemsOwner(ForStateBookingContext context) {
         log.info("получение сведений о бронированиях для отдельного владельца вещей");
 
-        Long itemOwnerId = context.getSharerUserId();
-        context.setSharerUser(userService.retrieve(itemOwnerId));
+        retrieveUser(context.getSharerUserId()); // выбросит исключение, если пользователь не будет найден
 
-        sharerUserValidator.validate(context);
+        Long itemOwnerId = context.getSharerUserId();
 
         Pageable pageable = PageRequest.of(context.getFrom() / context.getSize(),
                 context.getSize());
 
         State state = context.getState();
 
-        List<Booking> result;
+        List<Booking> bookings;
         LocalDateTime nowTime = LocalDateTime.now();
         switch (state) {
             case PAST:
-                result = bookingRepository
+                bookings = bookingRepository
                         .findByItemOwnerIdAndEndBeforeOrderByStartDesc(itemOwnerId,
                                 nowTime,
                                 pageable);
                 break;
             case FUTURE:
-                result = bookingRepository
+                bookings = bookingRepository
                         .findByItemOwnerIdAndStartAfterOrderByStartDesc(itemOwnerId,
                                 nowTime,
                                 pageable);
                 break;
             case CURRENT:
-                result = bookingRepository
+                bookings = bookingRepository
                         .findByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(itemOwnerId,
                                 nowTime,
                                 nowTime,
                                 pageable);
                 break;
             case WAITING:
-                result = bookingRepository
+                bookings = bookingRepository
                         .findByItemOwnerIdAndStatusOrderByStartDesc(itemOwnerId,
                                 BookingStatus.WAITING,
                                 pageable);
                 break;
             case REJECTED:
-                result = bookingRepository
+                bookings = bookingRepository
                         .findByItemOwnerIdAndStatusOrderByStartDesc(itemOwnerId,
                                 BookingStatus.REJECTED,
                                 pageable);
                 break;
             case STARTED:
-                result = bookingRepository
+                bookings = bookingRepository
                         .findByItemOwnerIdAndStatusAndStartBefore(itemOwnerId,
                                 BookingStatus.APPROVED,
                                 nowTime,
                                 pageable);
                 break;
             case COMPLETED:
-                result = bookingRepository
+                bookings = bookingRepository
                         .findByItemOwnerIdAndStatusAndEndBefore(itemOwnerId,
                                 BookingStatus.APPROVED,
                                 nowTime,
                                 pageable);
                 break;
             default:
-                result = bookingRepository
+                bookings = bookingRepository
                         .findByItemOwnerIdOrderByStartDesc(itemOwnerId,
                                 pageable);
                 break;
         }
 
-        return toBookingExtraDtoMapper.map(result);
-    }
-
-    @Override
-    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-    public Map<TypesOfBookingConnectionToItem, Booking> retrieveForItem(Long itemId) {
-        Map<TypesOfBookingConnectionToItem, Booking> result = new HashMap<>();
-        LocalDateTime nowTime = LocalDateTime.now();
-        List<Booking> bookings;
-
-        bookings = bookingRepository.findByItemIdAndStatusAndStartBeforeOrderByEndDesc(itemId,
-                BookingStatus.APPROVED,
-                nowTime);
-
-        if (bookings.size() > 0) {
-            result.put(TypesOfBookingConnectionToItem.LAST, bookings.get(0));
+        List<BookingExtraDto> result = new ArrayList<>();
+        for (Booking booking : bookings) {
+            BookingExtraDto bookingExtraDto = bookingMapper.mapToBookingExtraDto(booking);
+            bookingExtraDto.setBooker(userMapper.mapToUserDto(booking.getBooker()));
+            bookingExtraDto.setItem(itemMapper.mapToItemDto(booking.getItem()));
+            result.add(bookingExtraDto);
         }
-
-        bookings = bookingRepository.findFirstByItemIdAndStatusAndStartAfterOrderByStart(itemId,
-                BookingStatus.APPROVED,
-                nowTime);
-
-        if (bookings.size() > 0) {
-            result.put(TypesOfBookingConnectionToItem.NEXT, bookings.get(0));
-        }
-
-        return result;
-    }
-
-    @Override
-    @Transactional(propagation = Propagation.REQUIRED)
-    public Map<Long, Map<TypesOfBookingConnectionToItem, Booking>> retrieveForItems(List<Long> ids) {
-        Map<Long, Map<TypesOfBookingConnectionToItem, Booking>> result = new HashMap<>();
-        LocalDateTime nowTime = LocalDateTime.now();
-
-        proceedBookingsForItem(result,
-                bookingRepository.findLastBookingsForItems(ids,
-                        BookingStatus.APPROVED,
-                        nowTime),
-                TypesOfBookingConnectionToItem.LAST);
-
-        proceedBookingsForItem(result,
-                bookingRepository.findNextBookingsForItems(ids,
-                        BookingStatus.APPROVED,
-                        nowTime),
-                TypesOfBookingConnectionToItem.NEXT);
 
         return result;
     }
@@ -269,15 +236,18 @@ public class BookingServiceImpl implements ControllerBookingService, ExternalBoo
     public BookingExtraDto retrieve(BasicBookingContext context) {
         log.info("Получение записи по идентификатору");
 
-        context.setSharerUser(userService.retrieve(context.getSharerUserId()));
+        retrieveUser(context.getSharerUserId()); //выбросит исключение, если пользователь не нейден
 
-        sharerUserValidator.validate(context);
+        Booking booking = retrieve(context.getTargetBookingId());
 
-        context.setBooking(retrieve(context.getTargetBookingId()));
+        relatedToBookedItemUserValidator.validate(context.getSharerUserId(), booking);
 
-        relatedToBookedItemUserValidator.validate(context);
+        BookingExtraDto result = bookingMapper.mapToBookingExtraDto(booking);
 
-        return toBookingExtraDtoMapper.map(context.getBooking());
+        result.setBooker(userMapper.mapToUserDto(booking.getBooker()));
+        result.setItem(itemMapper.mapToItemDto(booking.getItem()));
+
+        return result;
     }
 
     @Override
@@ -285,7 +255,7 @@ public class BookingServiceImpl implements ControllerBookingService, ExternalBoo
     public List<BookingExtraDto> retrieve() {
         log.info("получение записей обо всех бронированиях");
 
-        return toBookingExtraDtoMapper.map(bookingRepository.findAll());
+        return bookingMapper.mapToBookingExtraDto(bookingRepository.findAll());
     }
 
     @Override
@@ -293,18 +263,25 @@ public class BookingServiceImpl implements ControllerBookingService, ExternalBoo
     public BookingExtraDto approve(ApproveBookingContext context) {
         log.info("подтверждение/отмена бронирования");
 
-        context.setBooking(retrieve(context.getTargetBookingId()));
+        Booking booking = retrieve(context.getTargetBookingId());
 
-        ownerOfBookedItemValidator.validate(context);
-        alreadyApprovedBookingValidator.validate(context);
+        ownerOfBookedItemValidator.validate(context.getSharerUserId(), booking);
 
         if (context.getIsApproved()) {
-            context.getBooking().setStatus(BookingStatus.APPROVED);
+            alreadyApprovedBookingValidator.validate(booking);
+            booking.setStatus(BookingStatus.APPROVED);
         } else {
-            context.getBooking().setStatus(BookingStatus.REJECTED);
+            booking.setStatus(BookingStatus.REJECTED);
         }
 
-        return toBookingExtraDtoMapper.map(bookingRepository.save(context.getBooking()));
+        booking = bookingRepository.save(booking);
+
+        BookingExtraDto result = bookingMapper.mapToBookingExtraDto(booking);
+
+        result.setBooker(userMapper.mapToUserDto(booking.getBooker()));
+        result.setItem(itemMapper.mapToItemDto(booking.getItem()));
+
+        return result;
     }
 
     @Override
@@ -315,9 +292,8 @@ public class BookingServiceImpl implements ControllerBookingService, ExternalBoo
         bookingRepository.deleteById(context.getTargetBookingId());
     }
 
-    @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public Booking retrieve(Long bookingId) {
+    private Booking retrieve(Long bookingId) {
         Optional<Booking> result = bookingRepository.findById(bookingId);
 
         result.orElseThrow(() -> new NotFoundException("запись о бронировании не найдена"));
@@ -325,34 +301,22 @@ public class BookingServiceImpl implements ControllerBookingService, ExternalBoo
         return result.get();
     }
 
-    @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public List<Booking> retrieveSuccessfulBookings(Long bookerId) {
+    private Item retrieveItem(Long itemId) {
+        Optional<Item> result = itemRepository.findById(itemId);
 
-        return bookingRepository
-                .findByBookerIdAndStatusAndEndBefore(bookerId,
-                        BookingStatus.APPROVED,
-                        LocalDateTime.now());
+        result.orElseThrow(() -> new NotFoundException("запись не найдена"));
 
+        return result.get();
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    private void proceedBookingsForItem(Map<Long, Map<TypesOfBookingConnectionToItem, Booking>> bookingByItemsId,
-                                        List<Booking> bookings,
-                                        TypesOfBookingConnectionToItem type) {
-        if (bookings.size() > 0) {
-            Long lastItemId = -1L;
-            for (Booking booking : bookings) {
-                Long itemId = booking.getItem().getId();
+    private User retrieveUser(Long id) {
+        Optional<User> result = userRepository.findById(id);
 
-                if (!itemId.equals(lastItemId)) {
-                    Map<TypesOfBookingConnectionToItem, Booking> bookingsForOneItem =
-                            bookingByItemsId.getOrDefault(itemId, new HashMap<>());
-                    bookingsForOneItem.put(type, booking);
-                    bookingByItemsId.put(itemId, bookingsForOneItem);
-                }
-            }
-        }
+        result.orElseThrow(() -> new NotFoundException("запись о пользователе не найдена"));
+
+        return result.get();
     }
 
 }

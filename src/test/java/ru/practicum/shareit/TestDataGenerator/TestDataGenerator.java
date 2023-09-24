@@ -194,7 +194,7 @@ public class TestDataGenerator {
 
         result.setId(++lastBookingId);
         result.setStart(bookingMoment);
-        result.setEnd(bookingMoment);
+        result.setEnd(bookingMoment.plusHours(2));
         result.setItem(generateItemDto());
         result.setItemId(result.getItem().getId());
         result.setBooker(generateUserDto());
@@ -251,8 +251,8 @@ public class TestDataGenerator {
         return result;
     }
 
-    public ItemRequestDto generateItemRequestWithOnlyTextDto() {
-        ItemRequestDto result = new ItemRequestDto();
+    public CreateItemRequestDto generateItemRequestWithOnlyTextDto() {
+        CreateItemRequestDto result = new CreateItemRequestDto();
         result.setDescription("хотелось взять напрокат " + getRandomStringValue(itemNames));
         return result;
     }

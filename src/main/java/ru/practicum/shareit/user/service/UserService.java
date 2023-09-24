@@ -8,7 +8,7 @@ import ru.practicum.shareit.user.contexts.UpdateUserContext;
 
 import java.util.List;
 
-public interface ControllerUserService {
+public interface UserService {
 
     UserDto create(BasicUserContext request);
 

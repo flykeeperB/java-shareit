@@ -5,7 +5,7 @@ import ru.practicum.shareit.booking.contexts.*;
 
 import java.util.List;
 
-public interface ControllerBookingService {
+public interface BookingService {
 
     BookingExtraDto create(CreateBookingContext context);
 

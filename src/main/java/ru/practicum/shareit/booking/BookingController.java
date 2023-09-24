@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingExtraDto;
 import ru.practicum.shareit.booking.dto.State;
 import ru.practicum.shareit.booking.contexts.*;
-import ru.practicum.shareit.booking.service.ControllerBookingService;
+import ru.practicum.shareit.booking.service.BookingService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -21,7 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BookingController {
 
-    private final ControllerBookingService service;
+    private final BookingService service;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -53,7 +53,7 @@ public class BookingController {
 
     @GetMapping
     public List<BookingExtraDto> retrieveForBooker(@RequestParam(defaultValue = "0") @Min(0) Integer from,
-                                                   @RequestParam(defaultValue = "15") @Min(0) Integer size,
+                                                   @RequestParam(defaultValue = "15") @Min(1) Integer size,
                                                    @RequestParam(name = "state",
                                                            required = false,
                                                            defaultValue = "ALL") String state,
@@ -73,7 +73,7 @@ public class BookingController {
 
     @GetMapping("/owner")
     public List<BookingExtraDto> retrieveForItemsOwner(@RequestParam(defaultValue = "0") @Min(0) Integer from,
-                                                       @RequestParam(defaultValue = "15") @Min(0) Integer size,
+                                                       @RequestParam(defaultValue = "15") @Min(1) Integer size,
                                                        @RequestParam(name = "state",
                                                                required = false,
                                                                defaultValue = "ALL") String state,

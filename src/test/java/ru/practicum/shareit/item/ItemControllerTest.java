@@ -16,8 +16,7 @@ import ru.practicum.shareit.item.contexts.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemExtraDto;
-import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.service.ControllerItemService;
+import ru.practicum.shareit.item.service.ItemService;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -41,16 +40,13 @@ public class ItemControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private ControllerItemService itemService;
+    private ItemService itemService;
 
-    private Item testItem;
     private ItemDto testItemDto;
     private ItemExtraDto testItemExtraDto;
-    private CommentDto testCommentDto;
 
     @BeforeEach
     public void setUp() {
-        testItem = testDataGenerator.generateItem();
         testItemDto = testDataGenerator.generateItemDto();
         testItemExtraDto = testDataGenerator.generateItemExtraDto();
     }
@@ -58,7 +54,8 @@ public class ItemControllerTest {
     @SneakyThrows
     @Test
     public void createRequestTest() {
-        when(itemService.create(any(CreateItemContext.class))).thenReturn(testItemDto);
+        when(itemService.create(argThat(argument -> argument.getItemDto().equals(testItemDto))))
+                .thenReturn(testItemDto);
 
         testItemDto.setId(null);
 
@@ -73,14 +70,15 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$.name").value(testItemDto.getName()))
                 .andExpect(jsonPath("$.description").value(testItemDto.getDescription()));
 
-        verify(itemService).create(any(CreateItemContext.class));
+        verify(itemService).create(argThat(argument -> argument.getItemDto().equals(testItemDto)));
         verifyNoMoreInteractions(itemService);
     }
 
     @SneakyThrows
     @Test
     public void updateRequestTest() {
-        when(itemService.update(any(UpdateItemContext.class))).thenReturn(testItemDto);
+        when(itemService.update(argThat(argument -> argument.getItemDto().equals(testItemDto))))
+                .thenReturn(testItemDto);
 
         testItemDto.setId(null);
 
@@ -96,7 +94,8 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$.name").value(testItemDto.getName()))
                 .andExpect(jsonPath("$.description").value(testItemDto.getDescription()));
 
-        verify(itemService).update(any(UpdateItemContext.class));
+        verify(itemService).update(
+                argThat(argument -> argument.getItemDto().equals(testItemDto)));
         verifyNoMoreInteractions(itemService);
     }
 
@@ -104,7 +103,7 @@ public class ItemControllerTest {
     @Test
     public void updateItemByWrongUserRequestTest() {
         doThrow(new AccessDeniedException("обновить данные может только владелец вещи"))
-                .when(itemService).update(any(UpdateItemContext.class));
+                .when(itemService).update(argThat(argument -> argument.getSharerUserId().equals(99L)));
 
         mockMvc.perform(MockMvcRequestBuilders.patch("/items/1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -114,7 +113,7 @@ public class ItemControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
 
-        verify(itemService).update(any(UpdateItemContext.class));
+        verify(itemService).update(argThat(argument -> argument.getSharerUserId().equals(99L)));
         verifyNoMoreInteractions(itemService);
     }
 
@@ -128,14 +127,15 @@ public class ItemControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        verify(itemService).delete(any(BasicItemContext.class));
+        verify(itemService).delete(argThat(argument -> argument.getTargetItemId().equals(1L)));
         verifyNoMoreInteractions(itemService);
     }
 
     @SneakyThrows
     @Test
     public void retrieveOneRequestTest() {
-        when(itemService.retrieve(any(BasicItemContext.class))).thenReturn(testItemExtraDto);
+        when(itemService.retrieve(argThat(argument -> argument.getTargetItemId().equals(1L))))
+                .thenReturn(testItemExtraDto);
 
         mockMvc.perform(get("/items/{itemId}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -148,14 +148,14 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$.name").value(testItemExtraDto.getName()))
                 .andExpect(jsonPath("$.description").value(testItemExtraDto.getDescription()));
 
-        verify(itemService).retrieve(any(BasicItemContext.class));
+        verify(itemService).retrieve(argThat(argument -> argument.getTargetItemId().equals(1L)));
         verifyNoMoreInteractions(itemService);
     }
 
     @SneakyThrows
     @Test
     public void retrieveForOwnerRequestTest() {
-        when(itemService.retrieveForOwner(any(RetrieveItemForOwnerContext.class)))
+        when(itemService.retrieveForOwner(argThat(argument -> argument.getSharerUserId().equals(1L))))
                 .thenReturn(List.of(testItemExtraDto));
 
         mockMvc.perform(get("/items")
@@ -171,7 +171,7 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$[0].name").value(testItemExtraDto.getName()))
                 .andExpect(jsonPath("$[0].description").value(testItemExtraDto.getDescription()));
 
-        verify(itemService).retrieveForOwner(any(RetrieveItemForOwnerContext.class));
+        verify(itemService).retrieveForOwner(argThat(argument -> argument.getSharerUserId().equals(1L)));
         verifyNoMoreInteractions(itemService);
     }
 
@@ -195,13 +195,15 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$[0].name").value(testItemExtraDto.getName()))
                 .andExpect(jsonPath("$[0].description").value(testItemExtraDto.getDescription()));
 
-        verify(itemService).retrieveAvailableForSearchText(any(RetrieveAvailableForSearchTextContext.class));
+        verify(itemService)
+                .retrieveAvailableForSearchText(
+                        argThat(argument -> argument.getSearchText().equals(testItemExtraDto.getName())));
         verifyNoMoreInteractions(itemService);
     }
 
     @SneakyThrows
     @Test
-    public void createCommentTest() throws Exception {
+    public void createCommentTest() {
         CommentDto testOnlyTextCommentDto = testDataGenerator.generateOnlyTextCommentDto();
         CommentDto testDetailedCommentDto = testDataGenerator.generateDetailedCommentDto();
         testDetailedCommentDto.setText(testOnlyTextCommentDto.getText());
@@ -222,7 +224,8 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$.text").value(testDetailedCommentDto.getText()));
 
         verify(itemService, times(1))
-                .createComment(any(CreateCommentContext.class));
+                .createComment(
+                        argThat(argument -> argument.getComment().getText().equals(testOnlyTextCommentDto.getText())));
     }
 
 }

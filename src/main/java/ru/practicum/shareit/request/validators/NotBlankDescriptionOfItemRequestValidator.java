@@ -1,9 +1,9 @@
 package ru.practicum.shareit.request.validators;
 
-import ru.practicum.shareit.request.contexts.CreateItemRequestContext;
+import ru.practicum.shareit.request.dto.ItemRequestDto;
 
 public interface NotBlankDescriptionOfItemRequestValidator {
 
-    void validate(CreateItemRequestContext request);
+    void validate(ItemRequestDto itemRequestDto);
 
 }

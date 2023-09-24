@@ -11,14 +11,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.practicum.shareit.TestDataGenerator.TestDataGenerator;
-import ru.practicum.shareit.booking.contexts.ApproveBookingContext;
 import ru.practicum.shareit.booking.contexts.BasicBookingContext;
-import ru.practicum.shareit.booking.contexts.CreateBookingContext;
 import ru.practicum.shareit.booking.contexts.ForStateBookingContext;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingExtraDto;
+import ru.practicum.shareit.booking.dto.State;
 import ru.practicum.shareit.booking.model.BookingStatus;
-import ru.practicum.shareit.booking.service.ControllerBookingService;
+import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.user.model.User;
 
 import java.nio.charset.StandardCharsets;
@@ -42,7 +41,7 @@ class BookingControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private ControllerBookingService bookingService;
+    private BookingService bookingService;
 
     private User testBooker;
     private BookingDto testBookingDto;
@@ -59,7 +58,8 @@ class BookingControllerTest {
     @SneakyThrows
     @Test
     public void createBookingRequestTest() {
-        when(bookingService.create(any(CreateBookingContext.class))).thenReturn(testBookingExtraDto);
+        when(bookingService.create(argThat(argument -> argument.getBookingExtraDto().equals(testBookingDto))))
+                .thenReturn(testBookingExtraDto);
 
         testBookingDto.setId(null);
         mockMvc.perform(post("/bookings")
@@ -75,7 +75,7 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.end").value(testBookingExtraDto
                         .getEnd().toString().replaceAll("0+$", "")));
 
-        verify(bookingService).create(any(CreateBookingContext.class));
+        verify(bookingService).create(argThat(argument -> argument.getBookingExtraDto().equals(testBookingDto)));
         verifyNoMoreInteractions(bookingService);
     }
 
@@ -84,7 +84,9 @@ class BookingControllerTest {
     @Test
     public void approveBookingRequestTest() {
         testBookingExtraDto.setStatus(BookingStatus.APPROVED);
-        when(bookingService.approve(any(ApproveBookingContext.class))).thenReturn(testBookingExtraDto);
+
+        when(bookingService.approve(argThat(argument -> argument.getIsApproved().equals(true))))
+                .thenReturn(testBookingExtraDto);
 
         mockMvc.perform(MockMvcRequestBuilders
                         .patch("/bookings/{bookingId}", testBookingDto.getId())
@@ -101,14 +103,15 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.end").value(testBookingExtraDto
                         .getEnd().toString().replaceAll("0+$", "")));
 
-        verify(bookingService).approve(any(ApproveBookingContext.class));
+        verify(bookingService).approve(argThat(argument -> argument.getIsApproved().equals(true)));
         verifyNoMoreInteractions(bookingService);
     }
 
     @SneakyThrows
     @Test
     public void retrieveBookingRequestTest() {
-        when(bookingService.retrieve(any(BasicBookingContext.class))).thenReturn(testBookingExtraDto);
+        when(bookingService.retrieve(argThat(argument -> argument.getSharerUserId().equals(1L))))
+                .thenReturn(testBookingExtraDto);
 
         mockMvc.perform(get("/bookings/{bookingId}", testBookingExtraDto.getId())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -122,14 +125,14 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.end").value(testBookingExtraDto
                         .getEnd().toString().replaceAll("0+$", "")));
 
-        verify(bookingService, atLeast(1)).retrieve(any(BasicBookingContext.class));
+        verify(bookingService, times(1)).retrieve(any(BasicBookingContext.class));
         verifyNoMoreInteractions(bookingService);
     }
 
     @SneakyThrows
     @Test
     public void retrieveForBookerRequestTest() {
-        when(bookingService.retrieveForBooker(any(ForStateBookingContext.class)))
+        when(bookingService.retrieveForBooker(argThat(argument -> argument.getState().equals(State.ALL))))
                 .thenReturn(List.of(testBookingExtraDto));
 
         mockMvc.perform(get("/bookings")
@@ -145,14 +148,14 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$[0].end").value(testBookingExtraDto
                         .getEnd().toString().replaceAll("0+$", "")));
 
-        verify(bookingService, atLeast(1)).retrieveForBooker(any(ForStateBookingContext.class));
+        verify(bookingService, times(1)).retrieveForBooker(any(ForStateBookingContext.class));
         verifyNoMoreInteractions(bookingService);
     }
 
     @SneakyThrows
     @Test
     public void retrieveForItemsOwnerRequestTest() {
-        when(bookingService.retrieveForItemsOwner(any(ForStateBookingContext.class)))
+        when(bookingService.retrieveForItemsOwner(argThat(argument -> argument.getState().equals(State.ALL))))
                 .thenReturn(List.of(testBookingExtraDto));
 
         mockMvc.perform(get("/bookings/owner")
@@ -168,7 +171,7 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$[0].end").value(testBookingExtraDto
                         .getEnd().toString().replaceAll("0+$", "")));
 
-        verify(bookingService, atLeast(1)).retrieveForItemsOwner(any(ForStateBookingContext.class));
+        verify(bookingService, times(1)).retrieveForItemsOwner(any(ForStateBookingContext.class));
         verifyNoMoreInteractions(bookingService);
     }
 }

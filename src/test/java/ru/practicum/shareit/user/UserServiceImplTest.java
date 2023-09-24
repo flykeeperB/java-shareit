@@ -12,12 +12,8 @@ import ru.practicum.shareit.user.contexts.BasicUserContext;
 import ru.practicum.shareit.user.contexts.DeleteUserContext;
 import ru.practicum.shareit.user.contexts.RetrieveUserContext;
 import ru.practicum.shareit.user.contexts.UpdateUserContext;
-import ru.practicum.shareit.user.mapping.ToUserDtoListMapper;
-import ru.practicum.shareit.user.mapping.ToUserDtoMapper;
-import ru.practicum.shareit.user.mapping.ToUserMapper;
-import ru.practicum.shareit.user.mapping.impl.ToUserDtoListMapperImpl;
-import ru.practicum.shareit.user.mapping.impl.ToUserDtoMapperImpl;
-import ru.practicum.shareit.user.mapping.impl.ToUserMapperImpl;
+import ru.practicum.shareit.user.mapping.UserMapper;
+import ru.practicum.shareit.user.mapping.impl.UserMapperImpl;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.user.service.impl.UserServiceImpl;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -43,9 +39,8 @@ class UserServiceImplTest {
     @Mock
     private UserRepository userRepository;
 
-    private ToUserDtoMapper toUserDtoMapper;
-    private ToUserMapper toUserMapper;
-    private ToUserDtoListMapper toUserDtoListMapper;
+    private UserMapper userMapper;
+
     private UserNullityValidator userNullityValidator;
     private UserNotBlankNameValidator userNotBlankNameValidator;
 
@@ -54,16 +49,14 @@ class UserServiceImplTest {
 
     @BeforeEach
     public void setUp() {
-        toUserDtoMapper = new ToUserDtoMapperImpl();
-        toUserMapper = new ToUserMapperImpl();
-        toUserDtoListMapper = new ToUserDtoListMapperImpl(toUserDtoMapper);
+
+        userMapper = new UserMapperImpl();
+
         userNullityValidator = new UserNullityValidatorImpl();
         userNotBlankNameValidator = new UserNotBlankNameValidatorImpl();
 
         userService = new UserServiceImpl(userRepository,
-                toUserDtoMapper,
-                toUserMapper,
-                toUserDtoListMapper,
+                userMapper,
                 userNullityValidator,
                 userNotBlankNameValidator
         );
@@ -177,21 +170,5 @@ class UserServiceImplTest {
 
         Mockito.verify(userRepository, Mockito.times(1))
                 .deleteById(anyLong());
-    }
-
-    @Test
-    public void externalRetrieveText() {
-
-        when(userRepository.findById(anyLong())).thenReturn(Optional.ofNullable(testSourceUser));
-
-        User testResultUser = userService.retrieve(1L);
-
-        assertNotNull(testResultUser, "Не возвращается результат создания записи.");
-        assertThat(testResultUser.getId(), equalTo(testSourceUser.getId()));
-        assertThat(testResultUser.getName(), equalTo(testSourceUser.getName()));
-        assertThat(testResultUser.getEmail(), equalTo(testSourceUser.getEmail()));
-        Mockito.verify(userRepository, Mockito.times(1))
-                .findById(anyLong());
-
     }
 }

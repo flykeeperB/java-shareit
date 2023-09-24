@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.user.service.ControllerUserService;
+import ru.practicum.shareit.user.service.UserService;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.contexts.BasicUserContext;
 import ru.practicum.shareit.user.contexts.DeleteUserContext;
@@ -20,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final ControllerUserService service;
+    private final UserService service;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

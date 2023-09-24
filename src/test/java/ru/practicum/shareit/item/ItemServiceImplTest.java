@@ -8,17 +8,17 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.TestDataGenerator.TestDataGenerator;
-import ru.practicum.shareit.booking.mapping.impl.ToBookingDtoMapperImpl;
+import ru.practicum.shareit.booking.mapping.BookingMapper;
+import ru.practicum.shareit.booking.mapping.impl.BookingMapperImpl;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.service.ExternalBookingService;
-import ru.practicum.shareit.core.validators.SharerUserValidator;
-import ru.practicum.shareit.core.validators.impl.SharerUserValidatorImpl;
+import ru.practicum.shareit.booking.model.BookingStatus;
+import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.item.contexts.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemExtraDto;
 import ru.practicum.shareit.item.mapping.*;
-import ru.practicum.shareit.item.mapping.impl.*;
+import ru.practicum.shareit.item.mapping.impl.ItemMapperImpl;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
@@ -28,14 +28,15 @@ import ru.practicum.shareit.item.validators.BookerValidator;
 import ru.practicum.shareit.item.validators.OnlyItemOwnerValidator;
 import ru.practicum.shareit.item.validators.impl.BookerValidatorImpl;
 import ru.practicum.shareit.item.validators.impl.OnlyItemOwnerValidatorImpl;
-import ru.practicum.shareit.request.service.ExternalItemRequestService;
-import ru.practicum.shareit.user.mapping.impl.ToUserDtoMapperImpl;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
+import ru.practicum.shareit.user.mapping.UserMapper;
+import ru.practicum.shareit.user.mapping.impl.UserMapperImpl;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.service.ExternalUserService;
+import ru.practicum.shareit.user.repository.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -57,58 +58,44 @@ public class ItemServiceImplTest {
     private ItemRepository itemRepository;
 
     @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private BookingRepository bookingRepository;
+
+    @Mock
     private CommentRepository commentRepository;
 
-    private ToItemDtoMapper toItemDtoMapper;
-    private ToItemExtraDtoMapper toItemExtraDtoMapper;
-    private ToItemMapper toItemMapper;
-    private ToCommentMapper toCommentMapper;
-    private ToCommentDtoMapper toCommentDtoMapper;
-
-    private OnlyItemOwnerValidator onlyItemOwnerValidator;
-    private BookerValidator bookerValidator;
-    private SharerUserValidator sharerUserValidator;
-
     @Mock
-    private ExternalUserService userService;
+    private ItemRequestRepository itemRequestRepository;
 
-    @Mock
-    private ExternalBookingService bookingService;
-
-    @Mock
-    private ExternalItemRequestService itemRequestService;
-
+    private User testUser;
     private Item testItem;
     private ItemDto testItemDto;
 
     @BeforeEach
     public void setUp() {
 
-        toCommentDtoMapper = new ToCommentDtoMapperImpl();
-        toItemDtoMapper = new ToItemDtoMapperImpl(new ToUserDtoMapperImpl(), toCommentDtoMapper);
-        toItemExtraDtoMapper = new ToItemExtraDtoMapperImpl(new ToBookingDtoMapperImpl(), toItemDtoMapper);
-        toItemMapper = new ToItemMapperImpl();
-        toCommentMapper = new ToCommentMapperImpl();
+        ItemMapper itemMapper = new ItemMapperImpl();
+        BookingMapper bookingMapper = new BookingMapperImpl();
+        UserMapper userMapper = new UserMapperImpl();
 
-        onlyItemOwnerValidator = new OnlyItemOwnerValidatorImpl();
-        bookerValidator = new BookerValidatorImpl();
-        sharerUserValidator = new SharerUserValidatorImpl();
+        OnlyItemOwnerValidator onlyItemOwnerValidator = new OnlyItemOwnerValidatorImpl();
+        BookerValidator bookerValidator = new BookerValidatorImpl();
 
         itemService = new ItemServiceImpl(itemRepository,
+                userRepository,
+                bookingRepository,
                 commentRepository,
-                toItemDtoMapper,
-                toItemExtraDtoMapper,
-                toItemMapper,
-                toCommentMapper,
-                toCommentDtoMapper,
+                itemRequestRepository,
+                itemMapper,
+                bookingMapper,
+                userMapper,
                 onlyItemOwnerValidator,
-                bookerValidator,
-                sharerUserValidator,
-                userService,
-                bookingService,
-                itemRequestService
+                bookerValidator
         );
 
+        testUser = testDataGenerator.generateUser();
         testItem = testDataGenerator.generateItem();
         testItemDto = testDataGenerator.generateItemDto();
     }
@@ -121,6 +108,19 @@ public class ItemServiceImplTest {
         }
 
         when(itemRepository.findByOwnerId(anyLong(), any(Pageable.class))).thenReturn(repositoryResult);
+
+        List<Booking> bookingRepositoryResult = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            bookingRepositoryResult.add(testDataGenerator.generateBooking());
+        }
+
+        when(bookingRepository.findLastBookingsForItems(any(List.class),
+                eq(BookingStatus.APPROVED),
+                any(LocalDateTime.class))).thenReturn(bookingRepositoryResult);
+
+        when(bookingRepository.findNextBookingsForItems(any(List.class),
+                eq(BookingStatus.APPROVED),
+                any(LocalDateTime.class))).thenReturn(bookingRepositoryResult);
 
         RetrieveItemForOwnerContext testContext = RetrieveItemForOwnerContext.builder()
                 .sharerUserId(1L)
@@ -169,7 +169,6 @@ public class ItemServiceImplTest {
 
     @Test
     public void retrieveAvailableForEmptySearchTextTest() {
-        List<Item> repositoryResult = new ArrayList<>();
 
         RetrieveAvailableForSearchTextContext testContext = RetrieveAvailableForSearchTextContext.builder()
                 .sharerUserId(1L)
@@ -181,7 +180,7 @@ public class ItemServiceImplTest {
         List<ItemDto> testResult = itemService.retrieveAvailableForSearchText(testContext);
 
         assertNotNull(testResult, "Не возвращается результат.");
-        assertEquals(repositoryResult.size(), testResult.size(), "Неверное количество записей в результате");
+        assertEquals(0, testResult.size(), "Неверное количество записей в результате");
 
         Mockito.verify(itemRepository, never())
                 .findAvailableByNameOrDescriptionContainingSearchText(anyString(), any(Pageable.class));
@@ -191,9 +190,7 @@ public class ItemServiceImplTest {
     public void createCommentTest() {
 
         when(itemRepository.findById(anyLong())).thenReturn(Optional.ofNullable(testItem));
-
-        User testUser = testDataGenerator.generateUser();
-        when(userService.retrieve(any())).thenReturn(testUser);
+        when(userRepository.findById(any())).thenReturn(Optional.of(testUser));
 
         Comment testComment = testDataGenerator.generateComment();
         when(commentRepository.save(any(Comment.class)))
@@ -206,7 +203,9 @@ public class ItemServiceImplTest {
             testBooking.getBooker().setId(1L);
             testSuccessfulBookings.add(testBooking);
         }
-        when(bookingService.retrieveSuccessfulBookings(anyLong()))
+        when(bookingRepository.findByBookerIdAndStatusAndEndBefore(anyLong(),
+                Mockito.eq(BookingStatus.APPROVED),
+                any(LocalDateTime.class)))
                 .thenReturn(testSuccessfulBookings);
 
         CreateCommentContext testContext = CreateCommentContext.builder()
@@ -229,10 +228,9 @@ public class ItemServiceImplTest {
     @Test
     public void createTest() {
         when(itemRepository.save(any(Item.class))).thenReturn(testItem);
-        User testUser = testDataGenerator.generateUser();
-        when(userService.retrieve(any())).thenReturn(testUser);
-        when(itemRequestService.retrieve(anyLong()))
-                .thenReturn(testDataGenerator.generateItemRequest());
+        when(userRepository.findById(any())).thenReturn(Optional.of(testUser));
+        when(itemRequestRepository.findById(anyLong()))
+                .thenReturn(Optional.of(testDataGenerator.generateItemRequest()));
 
         testItemDto.setId(null);
         testItemDto.setRequestId(1L);
@@ -257,6 +255,19 @@ public class ItemServiceImplTest {
 
         when(itemRepository.findById(anyLong())).thenReturn(Optional.ofNullable(testItem));
 
+        List<Booking> bookingRepositoryResult = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            bookingRepositoryResult.add(testDataGenerator.generateBooking());
+        }
+
+        when(bookingRepository.findByItemIdAndStatusAndStartBeforeOrderByEndDesc(anyLong(),
+                eq(BookingStatus.APPROVED),
+                any(LocalDateTime.class))).thenReturn(bookingRepositoryResult);
+
+        when(bookingRepository.findFirstByItemIdAndStatusAndStartAfterOrderByStart(anyLong(),
+                eq(BookingStatus.APPROVED),
+                any(LocalDateTime.class))).thenReturn(bookingRepositoryResult);
+
         BasicItemContext testContext = BasicItemContext.builder()
                 .targetItemId(1L)
                 .sharerUserId(1L)
@@ -279,6 +290,7 @@ public class ItemServiceImplTest {
         when(itemRepository.findById(anyLong())).thenReturn(Optional.ofNullable(testItem));
         //сохранение обновленной записи
         when(itemRepository.save(any(Item.class))).thenReturn(testItem);
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
 
         UpdateItemContext testContext = UpdateItemContext.builder()
                 .sharerUserId(1L)
@@ -294,6 +306,8 @@ public class ItemServiceImplTest {
         assertThat(testResult.getDescription(), equalTo(testItem.getDescription()));
         Mockito.verify(itemRepository, Mockito.times(1))
                 .findById(anyLong());
+        Mockito.verify(userRepository, Mockito.times(1))
+                .findById(anyLong());
         Mockito.verify(itemRepository, Mockito.times(1))
                 .save(any(Item.class));
     }
@@ -303,6 +317,7 @@ public class ItemServiceImplTest {
         testItem.getOwner().setId(1L);
         //для получение существующей записи перед обновлением
         when(itemRepository.findById(anyLong())).thenReturn(Optional.ofNullable(testItem));
+        when(userRepository.findById(any())).thenReturn(Optional.of(testUser));
 
         UpdateItemContext testContext = UpdateItemContext.builder()
                 .sharerUserId(1L)
@@ -345,28 +360,5 @@ public class ItemServiceImplTest {
         assertThat(testResult.getId(), equalTo(testItem.getId()));
         Mockito.verify(itemRepository, Mockito.times(1))
                 .findById(anyLong());
-    }
-
-    @Test
-    public void retrieveForRequestsIdsTest() {
-
-        List<Item> repositoryResult = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            Item testRequestedItem = testDataGenerator.generateItem();
-            testRequestedItem.setRequest(testDataGenerator.generateItemRequest());
-            repositoryResult.add(testRequestedItem);
-        }
-
-        when(itemRepository.findByRequestIdInOrderByRequestId(any(List.class)))
-                .thenReturn(repositoryResult);
-
-        Map<Long, List<Item>> testResult = itemService.retrieveForRequestsIds(List.of(1L, 2L, 3L));
-
-        assertNotNull(testResult, "Не возвращается результат.");
-        assertEquals(repositoryResult.size(), testResult.size(), "Неверное количество записей в результате");
-
-        Mockito.verify(itemRepository, Mockito.times(1))
-                .findByRequestIdInOrderByRequestId(any(List.class));
-
     }
 }

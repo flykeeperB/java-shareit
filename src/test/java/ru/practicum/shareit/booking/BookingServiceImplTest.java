@@ -15,40 +15,33 @@ import ru.practicum.shareit.booking.contexts.ForStateBookingContext;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingExtraDto;
 import ru.practicum.shareit.booking.dto.State;
-import ru.practicum.shareit.booking.mapping.ToBookingExtraDtoMapper;
-import ru.practicum.shareit.booking.mapping.ToBookingMapper;
-import ru.practicum.shareit.booking.mapping.impl.ToBookingDtoMapperImpl;
-import ru.practicum.shareit.booking.mapping.impl.ToBookingExtraDtoMapperImpl;
-import ru.practicum.shareit.booking.mapping.impl.ToBookingMapperImpl;
+import ru.practicum.shareit.booking.mapping.BookingMapper;
+import ru.practicum.shareit.booking.mapping.impl.BookingMapperImpl;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.booking.service.impl.BookingServiceImpl;
-import ru.practicum.shareit.booking.service.impl.TypesOfBookingConnectionToItem;
 import ru.practicum.shareit.booking.validators.*;
 import ru.practicum.shareit.booking.validators.impl.*;
-import ru.practicum.shareit.core.validators.SharerUserValidator;
-import ru.practicum.shareit.core.validators.impl.SharerUserValidatorImpl;
-import ru.practicum.shareit.item.mapping.ToItemDtoMapper;
-import ru.practicum.shareit.item.mapping.impl.ToCommentDtoMapperImpl;
-import ru.practicum.shareit.item.mapping.impl.ToItemDtoMapperImpl;
+import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.item.mapping.ItemMapper;
+import ru.practicum.shareit.item.mapping.impl.ItemMapperImpl;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.service.ExternalItemService;
-import ru.practicum.shareit.user.mapping.ToUserDtoMapper;
-import ru.practicum.shareit.user.mapping.impl.ToUserDtoMapperImpl;
+import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.user.mapping.UserMapper;
+import ru.practicum.shareit.user.mapping.impl.UserMapperImpl;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.service.ExternalUserService;
+import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
@@ -57,84 +50,63 @@ public class BookingServiceImplTest {
 
     private final TestDataGenerator testDataGenerator = new TestDataGenerator();
 
-    private BookingServiceImpl bookingService;
+    private final BookingMapper bookingMapper = new BookingMapperImpl();
+    private final UserMapper userMapper = new UserMapperImpl();
+    private final ItemMapper itemMapper = new ItemMapperImpl();
+
+    private final AvailabilityForBookingValidator availabilityForBookingValidator =
+            new AvailabilityForBookingValidatorImpl();
+    private final CorrectnessOfBookingDatesValidator correctnessOfBookingDatesValidator =
+            new CorrectnessOfBookingDatesValidatorImpl();
+    private final RelatedToBookedItemUserValidator relatedToBookedItemUserValidator =
+            new RelatedToBookedItemUserValidatorImpl();
+    private final OwnerOfBookedItemValidator ownerOfBookedItemValidator =
+            new OwnerOfBookedItemValidatorImpl();
+    private final AlreadyApprovedBookingValidator alreadyApprovedBookingValidator =
+            new AlreadyApprovedBookingValidatorImpl();
 
     @Mock
     private BookingRepository bookingRepository;
 
-    private AvailabilityForBookingValidator availabilityForBookingValidator;
-    private CorrectnessOfBookingDatesValidator correctnessOfBookingDatesValidator;
-    private SharerUserValidator sharerUserValidator;
-    private RelatedToBookedItemUserValidator relatedToBookedItemUserValidator;
-    private OwnerOfBookedItemValidator ownerOfBookedItemValidator;
-    private AlreadyApprovedBookingValidator alreadyApprovedBookingValidator;
-
-    private ToBookingMapper toBookingMapper;
-    private ToBookingExtraDtoMapper toBookingExtraDtoMapper;
-
-    private ToBookingDtoMapperImpl toBookingDtoMapper;
-    private ToUserDtoMapper toUserDtoMapper;
-    private ToItemDtoMapper toItemDtoMapper;
+    @Mock
+    private UserRepository userRepository;
 
     @Mock
-    private ExternalUserService userService;
+    private ItemRepository itemRepository;
 
-    @Mock
-    private ExternalItemService itemService;
+    private BookingServiceImpl bookingService;
 
     private Booking testBooking;
     private BookingExtraDto testBookingDto;
+    private User testUser;
 
     @BeforeEach
     public void setUp() {
-        AvailabilityForBookingValidator availabilityForBookingValidator =
-                new AvailabilityForBookingValidatorImpl();
-        CorrectnessOfBookingDatesValidator correctnessOfBookingDatesValidator =
-                new CorrectnessOfBookingDatesValidatorImpl();
-        SharerUserValidator sharerUserValidator =
-                new SharerUserValidatorImpl();
-        RelatedToBookedItemUserValidator relatedToBookedItemUserValidator =
-                new RelatedToBookedItemUserValidatorImpl();
-        OwnerOfBookedItemValidator ownerOfBookedItemValidator =
-                new OwnerOfBookedItemValidatorImpl();
-        AlreadyApprovedBookingValidator alreadyApprovedBookingValidator =
-                new AlreadyApprovedBookingValidatorImpl();
-
-        ToBookingMapper toBookingMapper = new ToBookingMapperImpl();
-
-        ToBookingExtraDtoMapper toBookingExtraDtoMapper = new ToBookingExtraDtoMapperImpl(
-                new ToBookingDtoMapperImpl(),
-                new ToUserDtoMapperImpl(),
-                new ToItemDtoMapperImpl(
-                        new ToUserDtoMapperImpl(),
-                        new ToCommentDtoMapperImpl()
-                )
-        );
 
         bookingService = new BookingServiceImpl(bookingRepository,
+                userRepository,
+                itemRepository,
+                bookingMapper,
+                userMapper,
+                itemMapper,
                 availabilityForBookingValidator,
                 correctnessOfBookingDatesValidator,
-                sharerUserValidator,
                 relatedToBookedItemUserValidator,
                 ownerOfBookedItemValidator,
-                alreadyApprovedBookingValidator,
-                toBookingMapper,
-                toBookingExtraDtoMapper,
-                userService,
-                itemService
+                alreadyApprovedBookingValidator
         );
 
         testBooking = testDataGenerator.generateBooking();
         testBookingDto = testDataGenerator.generateBookingDto();
+        testUser = testDataGenerator.generateUser();
     }
 
     @Test
     public void createTest() {
         when(bookingRepository.save(any(Booking.class))).thenReturn(testBooking);
-        User testUser = testDataGenerator.generateUser();
         Item testItem = testDataGenerator.generateItem();
-        when(userService.retrieve(any())).thenReturn(testUser);
-        when(itemService.retrieve(any())).thenReturn(testItem);
+        when(userRepository.findById(any())).thenReturn(Optional.of(testUser));
+        when(itemRepository.findById(any())).thenReturn(Optional.of(testItem));
 
         testBookingDto.setId(null);
         testBookingDto.setStart(testBooking.getStart());
@@ -156,9 +128,102 @@ public class BookingServiceImplTest {
     }
 
     @Test
+    public void createByOwnerTest() {
+        Item testItem = testDataGenerator.generateItem();
+        testItem.getOwner().setId(1L);
+        when(userRepository.findById(any())).thenReturn(Optional.of(testUser));
+        when(itemRepository.findById(any())).thenReturn(Optional.of(testItem));
+
+        testBookingDto.setId(null);
+
+        CreateBookingContext testContext = CreateBookingContext.builder()
+                .bookingExtraDto(testBookingDto)
+                .sharerUserId(1L)
+                .build();
+
+        assertThrows(NotFoundException.class, () -> bookingService.create(testContext));
+
+    }
+
+    @Test
+    public void createNotAvailableTest() {
+        Item testItem = testDataGenerator.generateItem();
+        testItem.setAvailable(false);
+        when(userRepository.findById(any())).thenReturn(Optional.of(testUser));
+        when(itemRepository.findById(any())).thenReturn(Optional.of(testItem));
+
+        testBookingDto.setId(null);
+
+        CreateBookingContext testContext = CreateBookingContext.builder()
+                .bookingExtraDto(testBookingDto)
+                .sharerUserId(1L)
+                .build();
+
+        assertThrows(ValidationException.class, () -> bookingService.create(testContext));
+
+    }
+
+    @Test
+    public void createWithEqualsStartAndEndDatesTest() {
+        Item testItem = testDataGenerator.generateItem();
+        when(userRepository.findById(any())).thenReturn(Optional.of(testUser));
+        when(itemRepository.findById(any())).thenReturn(Optional.of(testItem));
+
+        testBookingDto.setId(null);
+        testBookingDto.setStart(testBooking.getStart());
+        testBookingDto.setEnd(testBooking.getStart());
+
+        CreateBookingContext testContext = CreateBookingContext.builder()
+                .bookingExtraDto(testBookingDto)
+                .sharerUserId(1L)
+                .build();
+
+        assertThrows(ValidationException.class, () -> bookingService.create(testContext));
+
+    }
+
+    @Test
+    public void createWithWrongDatesTest() {
+        Item testItem = testDataGenerator.generateItem();
+        when(userRepository.findById(any())).thenReturn(Optional.of(testUser));
+        when(itemRepository.findById(any())).thenReturn(Optional.of(testItem));
+
+        testBookingDto.setId(null);
+        testBookingDto.setStart(testBooking.getEnd());
+        testBookingDto.setEnd(testBooking.getStart());
+
+        CreateBookingContext testContext = CreateBookingContext.builder()
+                .bookingExtraDto(testBookingDto)
+                .sharerUserId(1L)
+                .build();
+
+        assertThrows(ValidationException.class, () -> bookingService.create(testContext));
+
+    }
+
+    @Test
+    public void createWithWrongStartDateTest() {
+        Item testItem = testDataGenerator.generateItem();
+        when(userRepository.findById(any())).thenReturn(Optional.of(testUser));
+        when(itemRepository.findById(any())).thenReturn(Optional.of(testItem));
+
+        testBookingDto.setId(null);
+        testBookingDto.setStart(LocalDateTime.now().minusMinutes(1));
+        testBookingDto.setEnd(testBooking.getEnd());
+
+        CreateBookingContext testContext = CreateBookingContext.builder()
+                .bookingExtraDto(testBookingDto)
+                .sharerUserId(1L)
+                .build();
+
+        assertThrows(ValidationException.class, () -> bookingService.create(testContext));
+
+    }
+
+    @Test
     public void retrieveTest() {
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.ofNullable(testBooking));
-        when(userService.retrieve(anyLong())).thenReturn(testDataGenerator.generateUser());
+        when(userRepository.findById(any())).thenReturn(Optional.of(testUser));
 
         BasicBookingContext testContext = BasicBookingContext.builder()
                 .targetBookingId(testBooking.getId())
@@ -207,6 +272,7 @@ public class BookingServiceImplTest {
     @Test
     public void approveTest() {
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.ofNullable(testBooking));
+        when(bookingRepository.save(any(Booking.class))).thenReturn(testBooking);
 
         ApproveBookingContext testContext = ApproveBookingContext.builder()
                 .targetBookingId(1L)
@@ -223,7 +289,7 @@ public class BookingServiceImplTest {
     @Test
     public void retrieveForBookerTest() {
         User testUser = testDataGenerator.generateUser();
-        when(userService.retrieve(anyLong())).thenReturn(testUser);
+        when(userRepository.findById(any())).thenReturn(Optional.of(testUser));
 
         List<Booking> repositoryResult = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
@@ -311,7 +377,7 @@ public class BookingServiceImplTest {
     @Test
     public void retrieveForItemsOwnerTest() {
         User testUser = testDataGenerator.generateUser();
-        when(userService.retrieve(anyLong())).thenReturn(testUser);
+        when(userRepository.findById(any())).thenReturn(Optional.of(testUser));
 
         List<Booking> repositoryResult = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
@@ -392,121 +458,6 @@ public class BookingServiceImplTest {
 
     }
 
-    @Test
-    public void retrieveForItemTest() {
-
-        List<Booking> repositoryResult1 = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            repositoryResult1.add(testDataGenerator.generateBooking());
-        }
-
-        when(bookingRepository.findByItemIdAndStatusAndStartBeforeOrderByEndDesc(anyLong(),
-                any(BookingStatus.class),
-                any(LocalDateTime.class))).thenReturn(repositoryResult1);
-
-        List<Booking> repositoryResult2 = new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
-            repositoryResult2.add(testDataGenerator.generateBooking());
-        }
-
-        when(bookingRepository.findFirstByItemIdAndStatusAndStartAfterOrderByStart(anyLong(),
-                any(BookingStatus.class),
-                any(LocalDateTime.class))).thenReturn(repositoryResult2);
-
-        Map<TypesOfBookingConnectionToItem, Booking> testResult = bookingService.retrieveForItem(1L);
-
-        assertNotNull(testResult, "Не возвращается результат.");
-        assertNotNull(testResult.get(TypesOfBookingConnectionToItem.LAST),
-                "Результат не содержит части данных (last booking)");
-        assertNotNull(testResult.get(TypesOfBookingConnectionToItem.NEXT),
-                "Результат не содержит части данных (next booking)");
-
-        Mockito.verify(bookingRepository, Mockito.times(1))
-                .findByItemIdAndStatusAndStartBeforeOrderByEndDesc(anyLong(),
-                        any(BookingStatus.class),
-                        any(LocalDateTime.class));
-
-        Mockito.verify(bookingRepository, Mockito.times(1))
-                .findFirstByItemIdAndStatusAndStartAfterOrderByStart(anyLong(),
-                        any(BookingStatus.class),
-                        any(LocalDateTime.class));
-    }
-
-    @Test
-    public void retrieveForItemsTest() {
-        List<Booking> repositoryResult = new ArrayList<>();
-        for (int i = 0; i < 3; i++) {
-            Booking booking = testDataGenerator.generateBooking();
-            booking.getItem().setId((long) i + 1);
-            repositoryResult.add(booking);
-        }
-
-        when(bookingRepository.findLastBookingsForItems(any(List.class),
-                any(BookingStatus.class),
-                any(LocalDateTime.class))).thenReturn(repositoryResult);
-
-        when(bookingRepository.findNextBookingsForItems(any(List.class),
-                any(BookingStatus.class),
-                any(LocalDateTime.class))).thenReturn(repositoryResult);
-
-        Map<Long, Map<TypesOfBookingConnectionToItem, Booking>> testResult = bookingService.retrieveForItems(List.of(1L, 2L, 3L));
-
-        assertNotNull(testResult, "Не возвращается результат.");
-        assertEquals(3, testResult.size(), "Неверное количество записей в результате");
-        assertNotNull(testResult.get(1L).get(TypesOfBookingConnectionToItem.LAST),
-                "Результат не содержит части данных (last booking)");
-        assertNotNull(testResult.get(1L).get(TypesOfBookingConnectionToItem.NEXT),
-                "Результат не содержит части данных (next booking)");
-
-        Mockito.verify(bookingRepository, Mockito.times(1))
-                .findLastBookingsForItems(any(List.class),
-                        any(BookingStatus.class),
-                        any(LocalDateTime.class));
-
-        Mockito.verify(bookingRepository, Mockito.times(1))
-                .findNextBookingsForItems(any(List.class),
-                        any(BookingStatus.class),
-                        any(LocalDateTime.class));
-
-    }
-
-    @Test
-    public void retrieveForExternalServicesTest() {
-        when(bookingRepository.findById(anyLong())).thenReturn(Optional.ofNullable(testBooking));
-
-        Booking testResult = bookingService.retrieve(1L);
-
-        assertNotNull(testResult, "Не возвращается результат создания записи.");
-        assertThat(testResult.getId(), equalTo(testBooking.getId()));
-        Mockito.verify(bookingRepository, Mockito.times(1))
-                .findById(anyLong());
-    }
-
-    @Test
-    public void retrieveSuccessfulBookingsTest() {
-
-        List<Booking> repositoryResult = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            Booking booking = testDataGenerator.generateBooking();
-            repositoryResult.add(booking);
-        }
-
-        when(bookingRepository.findByBookerIdAndStatusAndEndBefore(anyLong(),
-                any(BookingStatus.class),
-                any(LocalDateTime.class))).thenReturn(repositoryResult);
-
-        List<Booking> testResult = bookingService.retrieveSuccessfulBookings(1L);
-
-        assertNotNull(testResult, "Не возвращается результат.");
-        assertEquals(10, testResult.size(), "Неверное количество записей в результате");
-
-        Mockito.verify(bookingRepository, Mockito.times(1))
-                .findByBookerIdAndStatusAndEndBefore(anyLong(),
-                        any(BookingStatus.class),
-                        any(LocalDateTime.class));
-
-    }
-
     private void retrieveForOwnerByState(State testState, List<Booking> repositoryResult) {
         ForStateBookingContext testContext = ForStateBookingContext.builder()
                 .sharerUserId(1L)
@@ -537,4 +488,5 @@ public class BookingServiceImplTest {
         assertThat(testResult.get(0).getId(), equalTo(repositoryResult.get(0).getId()));
 
     }
+
 }

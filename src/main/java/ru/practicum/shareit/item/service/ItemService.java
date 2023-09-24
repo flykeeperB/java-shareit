@@ -7,7 +7,7 @@ import ru.practicum.shareit.item.dto.ItemExtraDto;
 
 import java.util.List;
 
-public interface ControllerItemService {
+public interface ItemService {
     List<ItemExtraDto> retrieveForOwner(RetrieveItemForOwnerContext context);
 
     List<ItemDto> retrieveAvailableForSearchText(RetrieveAvailableForSearchTextContext context);
@@ -21,4 +21,5 @@ public interface ControllerItemService {
     ItemDto update(UpdateItemContext context);
 
     void delete(BasicItemContext context);
+
 }

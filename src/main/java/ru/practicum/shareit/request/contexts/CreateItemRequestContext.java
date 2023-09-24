@@ -4,9 +4,10 @@ import lombok.Data;
 import lombok.experimental.SuperBuilder;
 import ru.practicum.shareit.core.contexts.SharerUserContext;
 import ru.practicum.shareit.request.dto.CreateItemRequestDto;
+import ru.practicum.shareit.request.dto.ItemRequestDto;
 
 @Data
 @SuperBuilder
 public class CreateItemRequestContext extends SharerUserContext {
-    private CreateItemRequestDto createItemRequestDto;
+    private ItemRequestDto itemRequestDto;
 }

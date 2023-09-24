@@ -11,13 +11,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.TestDataGenerator.TestDataGenerator;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.user.contexts.BasicUserContext;
 import ru.practicum.shareit.user.contexts.DeleteUserContext;
-import ru.practicum.shareit.user.contexts.RetrieveUserContext;
-import ru.practicum.shareit.user.contexts.UpdateUserContext;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.service.ControllerUserService;
+import ru.practicum.shareit.user.service.UserService;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -41,21 +37,20 @@ public class UserControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private ControllerUserService userService;
+    private UserService userService;
 
-    private User testUser;
     private UserDto testUserDto;
 
     @BeforeEach
     public void setUp() {
-        testUser = testDataGenerator.generateUser();
         testUserDto = testDataGenerator.generateUserDto();
     }
 
     @SneakyThrows
     @Test
     public void createRequestTest() {
-        when(userService.create(any(BasicUserContext.class))).thenReturn(testUserDto);
+        when(userService.create(
+                argThat(argument -> argument.getUserDto().equals(testUserDto)))).thenReturn(testUserDto);
 
         testUserDto.setId(null);
 
@@ -69,14 +64,14 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.name").value(testUserDto.getName()))
                 .andExpect(jsonPath("$.email").value(testUserDto.getEmail()));
 
-        verify(userService).create(any(BasicUserContext.class));
+        verify(userService).create(argThat(argument -> argument.getUserDto().equals(testUserDto)));
         verifyNoMoreInteractions(userService);
     }
 
     @SneakyThrows
     @Test
     public void updateRequestTest() {
-        when(userService.update(any(UpdateUserContext.class))).thenReturn(testUserDto);
+        when(userService.update(argThat(argument -> argument.getUserDto().equals(testUserDto)))).thenReturn(testUserDto);
 
         testUserDto.setId(null);
 
@@ -91,14 +86,15 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.name").value(testUserDto.getName()))
                 .andExpect(jsonPath("$.email").value(testUserDto.getEmail()));
 
-        verify(userService).update(any(UpdateUserContext.class));
+        verify(userService).update(argThat(argument -> argument.getUserDto().equals(testUserDto)));
         verifyNoMoreInteractions(userService);
     }
 
     @SneakyThrows
     @Test
     public void retrieveOneRequestTest() {
-        when(userService.retrieve(any(RetrieveUserContext.class))).thenReturn(testUserDto);
+        when(userService.retrieve(
+                argThat(argument -> argument.getTargetUserId().equals(testUserDto.getId())))).thenReturn(testUserDto);
 
         mockMvc.perform(get("/users/{userId}", testUserDto.getId())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -110,7 +106,8 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.name").value(testUserDto.getName()))
                 .andExpect(jsonPath("$.email").value(testUserDto.getEmail()));
 
-        verify(userService).retrieve(any(RetrieveUserContext.class));
+        verify(userService).retrieve(
+                argThat(argument -> argument.getTargetUserId().equals(testUserDto.getId())));
         verifyNoMoreInteractions(userService);
     }
 
@@ -142,7 +139,7 @@ public class UserControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        verify(userService).delete(any(DeleteUserContext.class));
+        verify(userService).delete(argThat(argument -> argument.getTargetUserId().equals(1L)));
         verifyNoMoreInteractions(userService);
     }
 
@@ -158,7 +155,7 @@ public class UserControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 
-        verify(userService).delete(any(DeleteUserContext.class));
+        verify(userService).delete(argThat(argument -> argument.getTargetUserId().equals(99L)));
         verifyNoMoreInteractions(userService);
     }
 

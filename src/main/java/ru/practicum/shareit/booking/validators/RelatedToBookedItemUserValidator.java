@@ -1,7 +1,7 @@
 package ru.practicum.shareit.booking.validators;
 
-import ru.practicum.shareit.booking.contexts.BasicBookingContext;
+import ru.practicum.shareit.booking.model.Booking;
 
 public interface RelatedToBookedItemUserValidator {
-    void validate(BasicBookingContext context);
+    void validate(Long sharerUserId, Booking booking);
 }

@@ -9,5 +9,4 @@ import ru.practicum.shareit.request.model.ItemRequest;
 @SuperBuilder
 public class CreateItemContext extends BasicItemContext {
     private final ItemDto itemDto;
-    private ItemRequest itemRequest;
 }
