@@ -2,9 +2,7 @@ package ru.practicum.shareit.request.mapping.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.practicum.shareit.item.dto.ItemExtraDto;
 import ru.practicum.shareit.item.mapping.ItemMapper;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.dto.ExtraItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.mapping.ItemRequestMapper;
