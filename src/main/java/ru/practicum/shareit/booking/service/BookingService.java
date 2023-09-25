@@ -1,32 +1,24 @@
 package ru.practicum.shareit.booking.service;
 
-import ru.practicum.shareit.booking.dto.BookingDto;
-import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.requestsModels.*;
+import ru.practicum.shareit.booking.dto.BookingExtraDto;
+import ru.practicum.shareit.booking.contexts.*;
 
 import java.util.List;
-import java.util.Map;
 
 public interface BookingService {
 
-    BookingDto create(CreateBookingRequest createBookingRequest);
+    BookingExtraDto create(CreateBookingContext context);
 
-    BookingDto retrieve(BasicBookingRequest basicBookingRequest);
+    BookingExtraDto retrieve(BasicBookingContext context);
 
-    List<BookingDto> retrieve();
+    List<BookingExtraDto> retrieve();
 
-    void delete(BasicBookingRequest request);
+    void delete(BasicBookingContext context);
 
-    BookingDto approve(ApproveBookingRequest approveBookingRequest);
+    BookingExtraDto approve(ApproveBookingContext context);
 
-    List<BookingDto> retrieveForBooker(ForStateBookingRequest request);
+    List<BookingExtraDto> retrieveForBooker(ForStateBookingContext context);
 
-    List<BookingDto> retrieveForItemsOwner(ForStateBookingRequest request);
-
-    Map<TypesOfBookingConnectionToItem, Booking> retrieveForItem(Long itemId);
-
-    Map<Long, Map<TypesOfBookingConnectionToItem, Booking>> retrieveForItems(List<Long> itemId);
-
-    Booking retrieve(Long bookingId);
+    List<BookingExtraDto> retrieveForItemsOwner(ForStateBookingContext context);
 
 }

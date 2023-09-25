@@ -3,7 +3,6 @@ package ru.practicum.shareit.item.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.validation.constraints.NotBlank;
@@ -27,7 +26,7 @@ public class ItemDto {
     private Boolean available;
 
     private UserDto owner;
-    private ItemRequestDto itemRequest;
+    private Long requestId;
 
     private List<CommentDto> comments;
 

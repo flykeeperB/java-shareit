@@ -2,13 +2,14 @@ package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.service.UserService;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.requestsModels.CreateUserRequest;
-import ru.practicum.shareit.user.requestsModels.DeleteUserRequest;
-import ru.practicum.shareit.user.requestsModels.RetrieveUserRequest;
-import ru.practicum.shareit.user.requestsModels.UpdateUserRequest;
+import ru.practicum.shareit.user.contexts.BasicUserContext;
+import ru.practicum.shareit.user.contexts.DeleteUserContext;
+import ru.practicum.shareit.user.contexts.RetrieveUserContext;
+import ru.practicum.shareit.user.contexts.UpdateUserContext;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -22,25 +23,26 @@ public class UserController {
     private final UserService service;
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public UserDto create(@Valid @RequestBody UserDto source) {
         log.info("запрос создания записи");
 
-        CreateUserRequest createUserRequest = CreateUserRequest.builder()
+        BasicUserContext basicUserContext = BasicUserContext.builder()
                 .userDto(source)
                 .build();
 
-        return service.create(createUserRequest);
+        return service.create(basicUserContext);
     }
 
     @GetMapping("/{userId}")
     public UserDto retrieve(@PathVariable("userId") Long userId) {
         log.info("запрос на получение записи по идентификатору");
 
-        RetrieveUserRequest retrieveUserRequest = RetrieveUserRequest.builder()
+        RetrieveUserContext retrieveUserContext = RetrieveUserContext.builder()
                 .targetUserId(userId)
                 .build();
 
-        return service.retrieve(retrieveUserRequest);
+        return service.retrieve(retrieveUserContext);
     }
 
     @GetMapping
@@ -55,24 +57,23 @@ public class UserController {
                           @PathVariable("userId") Long userId) {
         log.info("запрос на обновление (редактирование) записи");
 
-        UpdateUserRequest updateUserRequest = UpdateUserRequest.builder()
+        UpdateUserContext updateUserContext = UpdateUserContext.builder()
                 .targetUserId(userId)
                 .userDto(userDto)
                 .build();
 
-        //todo переписать или нет source.setId(id);
-        return service.update(updateUserRequest);
+        return service.update(updateUserContext);
     }
 
     @DeleteMapping("/{userId}")
     public void delete(@PathVariable("userId") Long userId) {
         log.info("запрос на удаление записи");
 
-        DeleteUserRequest deleteUserRequest = DeleteUserRequest.builder()
+        DeleteUserContext deleteUserContext = DeleteUserContext.builder()
                 .targetUserId(userId)
                 .build();
 
-        service.delete(deleteUserRequest);
+        service.delete(deleteUserContext);
     }
 
 }

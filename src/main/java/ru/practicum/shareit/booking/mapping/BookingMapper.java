@@ -1,65 +1,23 @@
 package ru.practicum.shareit.booking.mapping;
 
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingExtraDto;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.item.mapping.ItemMapper;
-import ru.practicum.shareit.user.mapping.UserMapper;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-@Component
-@AllArgsConstructor
-public class BookingMapper {
+public interface BookingMapper {
 
-    private final UserMapper userMapper;
-    private final ItemMapper itemMapper;
-    private final GenericBookingMapper genericBookingMapper;
+    BookingDto mapToBookingDto(Booking source);
 
-    public BookingDto toDto(Booking source, BookingDto target) {
-        if (source == null) {
-            return null;
-        }
+    BookingDto mapToBookingDto(Booking source, BookingDto target);
 
-        genericBookingMapper.toDto(source, target);
+    BookingExtraDto mapToBookingExtraDto(Booking source);
 
-        target.setStatus(source.getStatus());
-        target.setBooker(userMapper.toDto(source.getBooker()));
-        target.setItem(itemMapper.toDto(source.getItem()));
+    List<BookingExtraDto> mapToBookingExtraDto(List<Booking> source);
 
-        if (source.getItem() != null) {
-            target.setItemId(source.getItem().getId());
-        }
+    Booking mapToBooking(BookingExtraDto source, User sharerUser, Item item);
 
-        return target;
-    }
-
-    public Booking fromDto(BookingDto source, Booking target) {
-        if (source == null) {
-            return null;
-        }
-
-        genericBookingMapper.fromDto(source, target);
-
-        target.setStatus(source.getStatus());
-
-        return target;
-    }
-
-    public BookingDto toDto(Booking source) {
-        return toDto(source, new BookingDto());
-    }
-
-    public Booking fromDto(BookingDto source) {
-        return fromDto(source, new Booking());
-    }
-
-    public List<BookingDto> toDto(List<Booking> source) {
-        return source
-                .stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
-    }
 }

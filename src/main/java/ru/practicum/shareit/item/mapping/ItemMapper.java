@@ -1,70 +1,38 @@
 package ru.practicum.shareit.item.mapping;
 
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Component;
+import ru.practicum.shareit.booking.mapping.BookingMapper;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemExtraDto;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.mapping.UserMapper;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.user.model.User;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-@Component
-@AllArgsConstructor
-public class ItemMapper {
+public interface ItemMapper {
 
-    private final UserMapper userMapper;
-    private final CommentMapper commentMapper;
+    ItemDto mapToItemDto(Item source);
 
-    public ItemDto toDto(Item source, ItemDto target) {
-        if (source == null) {
-            return null;
-        }
+    ItemDto mapToItemDto(Item source, ItemDto target);
 
-        target.setName(source.getName());
-        target.setDescription(source.getDescription());
-        target.setAvailable(source.getAvailable());
-        target.setOwner(userMapper.toDto(source.getOwner()));
+    List<ItemDto> mapToItemDto(List<Item> source);
 
-        if (source.getComments() != null) {
-            target.setComments(commentMapper.toDto(source.getComments()));
-        } else {
-            target.setComments(new ArrayList<>());
-        }
+    ItemExtraDto mapToItemExtraDto(Item source);
 
-        target.setId(source.getId());
+    ItemExtraDto mapToItemExtraDto(Item source, ItemExtraDto target);
 
-        return target;
-    }
+    List<ItemExtraDto> mapToItemExtraDto(List<Item> source);
 
-    public Item fromDto(ItemDto source, Item target) {
-        if (source == null) {
-            return null;
-        }
+    List<ItemExtraDto> mapToItemExtraDto(List<Item> source, BookingMapper bookingMapper);
 
-        target.setName(source.getName());
-        target.setDescription(source.getDescription());
-        target.setAvailable(source.getAvailable());
-        target.setOwner(userMapper.fromDto(source.getOwner()));
+    Item mapToItem(ItemDto itemDto, User sharerUser, ItemRequest itemRequest);
 
-        target.setId(source.getId());
+    CommentDto mapToCommentDto(Comment comment);
 
-        return target;
-    }
+    List<CommentDto> mapToCommentDto(List<Comment> source);
 
-    public ItemDto toDto(Item source) {
-        return toDto(source, new ItemDto());
-    }
+    Comment mapToComment(CommentDto commentDto, User sharerUser, Item item);
 
-    public Item fromDto(ItemDto source) {
-        return fromDto(source, new Item());
-    }
-
-    public List<ItemDto> toDto(List<Item> source) {
-        return source
-                .stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
-    }
 }

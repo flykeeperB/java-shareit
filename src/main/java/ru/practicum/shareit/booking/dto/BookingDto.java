@@ -2,27 +2,26 @@ package ru.practicum.shareit.booking.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.booking.model.BookingStatus;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.user.dto.UserDto;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 
-@EqualsAndHashCode(callSuper = true)
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class BookingDto extends GenericBookingDto {
+@AllArgsConstructor
+public class BookingDto {
 
-    private ItemDto item;
+    protected Long id;
 
-    private UserDto booker;
+    private Long bookerId;
 
-    private BookingStatus status;
+    @NotNull(message = "Не определена дата начала бронирования")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    protected LocalDateTime start;
 
-    @NotNull
-    private Long itemId;
-
+    @NotNull(message = "Не определена дата окончания бронирования")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    protected LocalDateTime end;
 }
