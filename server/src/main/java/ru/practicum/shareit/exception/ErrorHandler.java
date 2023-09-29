@@ -5,11 +5,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-//import javax.validation.ConstraintViolationException;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -57,22 +54,6 @@ public class ErrorHandler {
     public ErrorResponse handleValidationException(final SQLException e) {
         return new ErrorResponse(e.getMessage());
     }
-
-    /*@ExceptionHandler(ConstraintViolationException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse onConstraintValidationException(
-            ConstraintViolationException e
-    ) {
-        final List<String> violations = e.getConstraintViolations().stream()
-                .map(
-                        violation -> violation.getPropertyPath().toString()
-                                + "> " +
-                                violation.getMessage()
-                )
-                .collect(Collectors.toList());
-        log.error(violations.toString());
-        return new ErrorResponse(violations.toString());
-    }*/
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.FORBIDDEN)
