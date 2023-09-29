@@ -2,7 +2,6 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +31,7 @@ public class ItemController {
 
     @GetMapping("/{itemId}")
     public ResponseEntity<Object> retrieve(@PathVariable Long itemId,
-                                 @RequestHeader(name = "X-Sharer-User-Id") Long userId) {
+                                           @RequestHeader(name = "X-Sharer-User-Id") Long userId) {
         log.info("Получение записи об отдельном бронировании");
 
         return itemClient.retieve(userId, itemId);
@@ -40,8 +39,8 @@ public class ItemController {
 
     @GetMapping
     public ResponseEntity<Object> retrieveForOwner(@RequestParam(defaultValue = "0") @Min(0) Integer from,
-                                               @RequestParam(defaultValue = "15") @Min(1) Integer size,
-                                               @RequestHeader(name = "X-Sharer-User-Id") Long userId) {
+                                                   @RequestParam(defaultValue = "15") @Min(1) Integer size,
+                                                   @RequestHeader(name = "X-Sharer-User-Id") Long userId) {
         log.info("получение записи о вещах по владельцу");
 
         return itemClient.retieve(userId, from, size);
@@ -49,18 +48,18 @@ public class ItemController {
 
     @GetMapping("/search")
     public ResponseEntity<Object> retrieveAvailableForSearchText(@RequestParam(defaultValue = "0") @Min(0) Integer from,
-                                                        @RequestParam(defaultValue = "15") @Min(1) Integer size,
-                                                        @RequestParam String text,
-                                                        @RequestHeader(name = "X-Sharer-User-Id") Long userId) {
+                                                                 @RequestParam(defaultValue = "15") @Min(1) Integer size,
+                                                                 @RequestParam String text,
+                                                                 @RequestHeader(name = "X-Sharer-User-Id") Long userId) {
         log.info("поиск вещей по тексту в наименовании или описании");
 
-        return itemClient.retieve(userId,text, from, size);
+        return itemClient.retieve(userId, text, from, size);
     }
 
     @PatchMapping("/{itemId}")
     public ResponseEntity<Object> update(@RequestBody(required = false) ItemDto itemDto,
-                          @PathVariable("itemId") Long itemId,
-                          @RequestHeader(name = "X-Sharer-User-Id") Long userId) {
+                                         @PathVariable("itemId") Long itemId,
+                                         @RequestHeader(name = "X-Sharer-User-Id") Long userId) {
         log.info("запрос на обновление (редактирование) записи");
 
         return itemClient.update(userId, itemId, itemDto);
@@ -68,10 +67,10 @@ public class ItemController {
 
     @PostMapping("/{itemId}/comment")
     public ResponseEntity<Object> createComment(@Valid @RequestBody CommentDto commentDto,
-                                    @PathVariable Long itemId,
-                                    @RequestHeader(
-                                            name = "X-Sharer-User-Id"
-                                    ) Long userId) {
+                                                @PathVariable Long itemId,
+                                                @RequestHeader(
+                                                        name = "X-Sharer-User-Id"
+                                                ) Long userId) {
         log.info("запрос на добавление комментария");
 
         return itemClient.createComment(userId, itemId, commentDto);

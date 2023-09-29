@@ -39,7 +39,7 @@ public class UserController {
 
     @PatchMapping("/{userId}")
     public ResponseEntity<Object> update(@RequestBody UserDto userDto,
-                          @PathVariable("userId") Long userId) {
+                                         @PathVariable("userId") Long userId) {
         log.info("запрос на обновление (редактирование) записи");
 
         return userClient.update(userId, userDto);

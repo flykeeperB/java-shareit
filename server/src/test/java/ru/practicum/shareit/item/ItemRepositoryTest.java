@@ -78,7 +78,7 @@ public class ItemRepositoryTest {
         Pageable pageable = Pageable.ofSize(10);
 
         List<Item> result = itemRepository.findAvailableByNameOrDescriptionContainingSearchText(
-                        "дириж", pageable);
+                "дириж", pageable);
 
         assertNotNull(result);
         assertFalse(result.isEmpty());

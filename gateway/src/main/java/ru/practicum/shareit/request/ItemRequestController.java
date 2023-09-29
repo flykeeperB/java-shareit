@@ -2,7 +2,6 @@ package ru.practicum.shareit.request;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -37,8 +36,8 @@ public class ItemRequestController {
 
     @GetMapping("/all")
     public ResponseEntity<Object> retrieve(@RequestParam(defaultValue = "0") @Min(0) Integer from,
-                                              @RequestParam(defaultValue = "15") @Min(1) Integer size,
-                                              @RequestHeader(name = "X-Sharer-User-Id") Long userId) {
+                                           @RequestParam(defaultValue = "15") @Min(1) Integer size,
+                                           @RequestHeader(name = "X-Sharer-User-Id") Long userId) {
         log.info("получение общего списка запросов о преодставлении вещей (постранично)");
 
         return itemRequestClient.retieve(userId, from, size);
@@ -46,7 +45,7 @@ public class ItemRequestController {
 
     @GetMapping("/{requestId}")
     public ResponseEntity<Object> retrieve(@PathVariable Long requestId,
-                                        @RequestHeader(name = "X-Sharer-User-Id") Long userId) {
+                                           @RequestHeader(name = "X-Sharer-User-Id") Long userId) {
         log.info("получение сведений о конкретном запросе о предоставлении вещи");
 
         return itemRequestClient.retieve(userId, requestId);
