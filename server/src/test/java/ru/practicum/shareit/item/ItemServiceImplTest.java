@@ -18,6 +18,7 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemExtraDto;
 import ru.practicum.shareit.item.mapping.*;
+import ru.practicum.shareit.item.mapping.impl.CommentMapperImpl;
 import ru.practicum.shareit.item.mapping.impl.ItemMapperImpl;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
@@ -76,6 +77,7 @@ public class ItemServiceImplTest {
     public void setUp() {
 
         ItemMapper itemMapper = new ItemMapperImpl();
+        CommentMapper commentMapper = new CommentMapperImpl();
         BookingMapper bookingMapper = new BookingMapperImpl();
         UserMapper userMapper = new UserMapperImpl();
 
@@ -88,6 +90,7 @@ public class ItemServiceImplTest {
                 commentRepository,
                 itemRequestRepository,
                 itemMapper,
+                commentMapper,
                 bookingMapper,
                 userMapper,
                 onlyItemOwnerValidator,

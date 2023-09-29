@@ -1,6 +1,5 @@
 package ru.practicum.shareit.user.mapping.impl;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapping.UserMapper;
@@ -10,7 +9,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-@RequiredArgsConstructor
 public class UserMapperImpl implements UserMapper {
 
     @Override

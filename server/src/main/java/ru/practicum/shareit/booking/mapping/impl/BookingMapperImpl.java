@@ -1,6 +1,5 @@
 package ru.practicum.shareit.booking.mapping.impl;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingExtraDto;
@@ -14,7 +13,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-@RequiredArgsConstructor
 public class BookingMapperImpl implements BookingMapper {
 
     @Override

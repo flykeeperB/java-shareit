@@ -1,6 +1,5 @@
 package ru.practicum.shareit.request.mapping.impl;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.item.mapping.ItemMapper;
 import ru.practicum.shareit.request.dto.ExtraItemRequestDto;
@@ -15,7 +14,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-@RequiredArgsConstructor
 public class ItemRequestMapperImpl implements ItemRequestMapper {
 
     @Override

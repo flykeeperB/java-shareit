@@ -1,13 +1,10 @@
 package ru.practicum.shareit.item.mapping.impl;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.mapping.BookingMapper;
-import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemExtraDto;
 import ru.practicum.shareit.item.mapping.ItemMapper;
-import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
@@ -17,7 +14,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-@RequiredArgsConstructor
 public class ItemMapperImpl implements ItemMapper {
 
     @Override
@@ -35,12 +31,6 @@ public class ItemMapperImpl implements ItemMapper {
         target.setName(source.getName());
         target.setDescription(source.getDescription());
         target.setAvailable(source.getAvailable());
-
-        if (source.getComments() != null) {
-            target.setComments(mapToCommentDto(source.getComments()));
-        } else {
-            target.setComments(new ArrayList<>());
-        }
 
         if (source.getRequest() != null) {
             target.setRequestId(source.getRequest().getId());
@@ -104,42 +94,6 @@ public class ItemMapperImpl implements ItemMapper {
         target.setRequest(itemRequest);
 
         target.setId(itemDto.getId());
-        return target;
-    }
-
-    @Override
-    public CommentDto mapToCommentDto(Comment source) {
-        if (source == null) {
-            return null;
-        }
-
-        CommentDto target = new CommentDto();
-
-        target.setCreated(source.getCreated());
-        target.setAuthorName(source.getAuthor().getName());
-        target.setText(source.getText());
-        target.setId(source.getId());
-
-        return target;
-    }
-
-    @Override
-    public List<CommentDto> mapToCommentDto(List<Comment> source) {
-        return source
-                .stream()
-                .map(this::mapToCommentDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public Comment mapToComment(CommentDto commentDto, User sharerUser, Item item) {
-        Comment target = new Comment();
-
-        target.setText(commentDto.getText());
-        target.setItem(item);
-        target.setAuthor(sharerUser);
-
-        target.setId(commentDto.getId());
         return target;
     }
 }

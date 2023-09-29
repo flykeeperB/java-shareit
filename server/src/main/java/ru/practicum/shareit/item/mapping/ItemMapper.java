@@ -29,10 +29,4 @@ public interface ItemMapper {
 
     Item mapToItem(ItemDto itemDto, User sharerUser, ItemRequest itemRequest);
 
-    CommentDto mapToCommentDto(Comment comment);
-
-    List<CommentDto> mapToCommentDto(List<Comment> source);
-
-    Comment mapToComment(CommentDto commentDto, User sharerUser, Item item);
-
 }

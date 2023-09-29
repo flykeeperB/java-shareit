@@ -47,6 +47,7 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRequestRepository itemRequestRepository;
 
     private final ItemMapper itemMapper;
+    private final CommentMapper commentMapper;
     private final BookingMapper bookingMapper;
     private final UserMapper userMapper;
 
@@ -123,6 +124,9 @@ public class ItemServiceImpl implements ItemService {
         ItemExtraDto result = new ItemExtraDto();
 
         itemMapper.mapToItemDto(item, result);
+
+        result.setComments(commentMapper.mapToCommentDto(item.getComments()));
+
         result.setOwner(userMapper.mapToUserDto(item.getOwner()));
 
         if (context.getSharerUserId()
@@ -185,7 +189,7 @@ public class ItemServiceImpl implements ItemService {
 
         bookerValidator.validate(context.getSharerUserId(), bookings);
 
-        Comment comment = itemMapper.mapToComment(context.getComment(),
+        Comment comment = commentMapper.mapToComment(context.getComment(),
                 sharerUser,
                 item);
 
@@ -193,7 +197,7 @@ public class ItemServiceImpl implements ItemService {
 
         Comment result = commentRepository.save(comment);
 
-        return itemMapper.mapToCommentDto(result);
+        return commentMapper.mapToCommentDto(result);
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
