@@ -161,63 +161,6 @@ public class BookingServiceImplTest {
 
     }
 
-    /*@Test
-    public void createWithEqualsStartAndEndDatesTest() {
-        Item testItem = testDataGenerator.generateItem();
-        when(userRepository.findById(any())).thenReturn(Optional.of(testUser));
-        when(itemRepository.findById(any())).thenReturn(Optional.of(testItem));
-
-        testBookingDto.setId(null);
-        testBookingDto.setStart(testBooking.getStart());
-        testBookingDto.setEnd(testBooking.getStart());
-
-        CreateBookingContext testContext = CreateBookingContext.builder()
-                .bookingExtraDto(testBookingDto)
-                .sharerUserId(1L)
-                .build();
-
-        assertThrows(ValidationException.class, () -> bookingService.create(testContext));
-
-    }*/
-
-    /*@Test
-    public void createWithWrongDatesTest() {
-        Item testItem = testDataGenerator.generateItem();
-        when(userRepository.findById(any())).thenReturn(Optional.of(testUser));
-        when(itemRepository.findById(any())).thenReturn(Optional.of(testItem));
-
-        testBookingDto.setId(null);
-        testBookingDto.setStart(testBooking.getEnd());
-        testBookingDto.setEnd(testBooking.getStart());
-
-        CreateBookingContext testContext = CreateBookingContext.builder()
-                .bookingExtraDto(testBookingDto)
-                .sharerUserId(1L)
-                .build();
-
-        assertThrows(ValidationException.class, () -> bookingService.create(testContext));
-
-    }*/
-
-    /*@Test
-    public void createWithWrongStartDateTest() {
-        Item testItem = testDataGenerator.generateItem();
-        when(userRepository.findById(any())).thenReturn(Optional.of(testUser));
-        when(itemRepository.findById(any())).thenReturn(Optional.of(testItem));
-
-        testBookingDto.setId(null);
-        testBookingDto.setStart(LocalDateTime.now().minusMinutes(1));
-        testBookingDto.setEnd(testBooking.getEnd());
-
-        CreateBookingContext testContext = CreateBookingContext.builder()
-                .bookingExtraDto(testBookingDto)
-                .sharerUserId(1L)
-                .build();
-
-        assertThrows(ValidationException.class, () -> bookingService.create(testContext));
-
-    }*/
-
     @Test
     public void retrieveTest() {
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.ofNullable(testBooking));

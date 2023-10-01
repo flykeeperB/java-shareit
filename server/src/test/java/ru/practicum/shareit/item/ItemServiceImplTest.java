@@ -169,25 +169,6 @@ public class ItemServiceImplTest {
                 .findAvailableByNameOrDescriptionContainingSearchText(anyString(), any(Pageable.class));
     }
 
-   /* @Test
-    public void retrieveAvailableForEmptySearchTextTest() {
-
-        RetrieveAvailableForSearchTextContext testContext = RetrieveAvailableForSearchTextContext.builder()
-                .sharerUserId(1L)
-                .searchText("")
-                .size(10)
-                .from(1)
-                .build();
-
-        List<ItemDto> testResult = itemService.retrieveAvailableForSearchText(testContext);
-
-        assertNotNull(testResult, "Не возвращается результат.");
-        assertEquals(0, testResult.size(), "Неверное количество записей в результате");
-
-        Mockito.verify(itemRepository, never())
-                .findAvailableByNameOrDescriptionContainingSearchText(anyString(), any(Pageable.class));
-    }*/
-
     @Test
     public void createCommentTest() {
 

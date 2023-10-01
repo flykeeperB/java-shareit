@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.contexts.BasicUserContext;
 
 import ru.practicum.shareit.user.contexts.DeleteUserContext;
@@ -77,19 +76,6 @@ class UserServiceImplTest {
         Mockito.verify(userRepository, Mockito.times(1))
                 .save(any(User.class));
     }
-
-    /*@Test
-    public void createWithBlankUserNameTest() {
-
-        testSourceUserDto.setName("");
-        BasicUserContext testContext = BasicUserContext.builder()
-                .userDto(testSourceUserDto)
-                .build();
-
-        Throwable thrown = assertThrows(ValidationException.class, () -> userService.create(testContext));
-
-        assertNotNull(thrown.getMessage());
-    }*/
 
     @Test
     public void retrieveTest() {

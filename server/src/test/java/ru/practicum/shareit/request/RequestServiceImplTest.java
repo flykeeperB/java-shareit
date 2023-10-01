@@ -10,7 +10,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.TestDataGenerator.TestDataGenerator;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.mapping.ItemMapper;
 import ru.practicum.shareit.item.mapping.impl.ItemMapperImpl;
 import ru.practicum.shareit.item.repository.ItemRepository;
@@ -102,23 +101,6 @@ public class RequestServiceImplTest {
         Mockito.verify(itemRequestRepository, Mockito.times(1))
                 .save(any(ItemRequest.class));
     }
-
-    /*@Test
-    public void createWithBlankDescriptionTest() {
-
-        when(userRepository.findById(any())).thenReturn(Optional.of(testUser));
-
-        testItemRequestDto.setDescription(null);
-
-        CreateItemRequestContext testContext = CreateItemRequestContext.builder()
-                .itemRequestDto(testItemRequestDto)
-                .sharerUserId(1L)
-                .build();
-
-        assertThrows(ValidationException.class, () -> {
-            itemRequestService.create(testContext);
-        });
-    }*/
 
     @Test
     public void retrieveForUserTest() {
