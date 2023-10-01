@@ -67,7 +67,11 @@ public class ItemServiceImpl implements ItemService {
 
         Item item = itemMapper.mapToItem(context.getItemDto(), sharerUser, itemRequest);
 
-        return itemMapper.mapToItemDto(repository.save(item));
+        ItemDto result = itemMapper.mapToItemDto(repository.save(item));
+
+        result.setOwner(userMapper.mapToUserDto(item.getOwner()));
+
+        return result;
     }
 
     @Override
@@ -100,7 +104,11 @@ public class ItemServiceImpl implements ItemService {
 
         Item newItem = patch(newDataForItem, oldItem);
 
-        return itemMapper.mapToItemDto(repository.save(newItem));
+        ItemDto result = itemMapper.mapToItemDto(repository.save(newItem));
+
+        result.setOwner(userMapper.mapToUserDto(newItem.getOwner()));
+
+        return result;
     }
 
     @Override

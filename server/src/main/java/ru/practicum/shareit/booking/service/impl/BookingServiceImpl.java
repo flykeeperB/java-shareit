@@ -42,7 +42,6 @@ public class BookingServiceImpl implements BookingService {
     private final ItemMapper itemMapper;
 
     private final AvailabilityForBookingValidator availabilityForBookingValidator;
-    private final CorrectnessOfBookingDatesValidator correctnessOfBookingDatesValidator;
     private final RelatedToBookedItemUserValidator relatedToBookedItemUserValidator;
     private final OwnerOfBookedItemValidator ownerOfBookedItemValidator;
     private final AlreadyApprovedBookingValidator alreadyApprovedBookingValidator;
@@ -57,7 +56,6 @@ public class BookingServiceImpl implements BookingService {
         Item item = retrieveItem(context.getBookingExtraDto().getItemId());
 
         availabilityForBookingValidator.validate(context.getSharerUserId(), item);
-        correctnessOfBookingDatesValidator.validate(context.getBookingExtraDto());
 
         context.getBookingExtraDto().setBookerId(context.getSharerUserId());
 
@@ -261,7 +259,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
     public BookingExtraDto approve(ApproveBookingContext context) {
-        log.info("подтверждение/отмена бронирования");
+        log.info("подтверждение/отмена бронирования ");
 
         Booking booking = retrieve(context.getTargetBookingId());
 

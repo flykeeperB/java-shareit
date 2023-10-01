@@ -16,8 +16,6 @@ public class UserClient extends BaseClient {
 
     public static final String API_PREFIX = "/users";
 
-    private final UserNotBlankNameValidator userNotBlankNameValidator;
-
     @Autowired
     public UserClient(@Value("${shareit-server.url}") String serverUrl,
                       RestTemplateBuilder builder,
@@ -28,13 +26,9 @@ public class UserClient extends BaseClient {
                         .requestFactory(HttpComponentsClientHttpRequestFactory::new)
                         .build()
         );
-
-        this.userNotBlankNameValidator = userNotBlankNameValidator;
     }
 
     public ResponseEntity<Object> create(UserDto userDto) {
-        userNotBlankNameValidator.validate(userDto);
-
         return post("", userDto);
     }
 

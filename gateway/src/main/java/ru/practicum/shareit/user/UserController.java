@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.validators.UserNotBlankNameValidator;
 
 import javax.validation.Valid;
 
@@ -16,9 +17,13 @@ public class UserController {
 
     private final UserClient userClient;
 
+    private final UserNotBlankNameValidator userNotBlankNameValidator;
+
     @PostMapping
     public ResponseEntity<Object> create(@Valid @RequestBody UserDto userDto) {
         log.info("запрос создания записи");
+
+        userNotBlankNameValidator.validate(userDto);
 
         return userClient.create(userDto);
     }

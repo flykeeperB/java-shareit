@@ -10,7 +10,6 @@ import ru.practicum.shareit.user.contexts.DeleteUserContext;
 import ru.practicum.shareit.user.contexts.RetrieveUserContext;
 import ru.practicum.shareit.user.contexts.UpdateUserContext;
 import ru.practicum.shareit.user.mapping.UserMapper;
-import ru.practicum.shareit.user.validators.UserNotBlankNameValidator;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
@@ -30,14 +29,11 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
 
     private final UserNullityValidator userNullityValidator;
-    private final UserNotBlankNameValidator userNotBlankNameValidator;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
     public UserDto create(BasicUserContext context) {
         log.info("создание записи");
-
-        userNotBlankNameValidator.validate(context);
 
         User user = userMapper.mapToUser(context.getUserDto());
 

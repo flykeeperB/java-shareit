@@ -28,6 +28,7 @@ public class ItemController {
                           @RequestHeader(name = "X-Sharer-User-Id") Long userId) {
         log.info("добавление записи");
 
+
         CreateItemContext request = CreateItemContext.builder()
                 .itemDto(itemDto)
                 .sharerUserId(userId)

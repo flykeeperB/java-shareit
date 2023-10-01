@@ -18,7 +18,6 @@ import java.util.Map;
 public class BookingClient extends BaseClient {
 
     private static final String API_PREFIX = "/bookings";
-    private final CorrectnessOfBookingDatesValidator correctnessOfBookingDatesValidator;
 
     @Autowired
     public BookingClient(@Value("${shareit-server.url}") String serverUrl,
@@ -30,8 +29,6 @@ public class BookingClient extends BaseClient {
                         .requestFactory(HttpComponentsClientHttpRequestFactory::new)
                         .build()
         );
-
-        this.correctnessOfBookingDatesValidator = correctnessOfBookingDatesValidator;
     }
 
     public ResponseEntity<Object> getBookings(long userId, BookingState state, Integer from, Integer size) {
@@ -53,15 +50,10 @@ public class BookingClient extends BaseClient {
     }
 
     public ResponseEntity<Object> approve(long userId, long bookingId, String approved) {
-        Map<String, Object> parameters = Map.of(
-                "approved", approved
-        );
-        return patch(String.format("/%d?approved={approved}", bookingId), userId, parameters, null);
+        return patch(String.format("/%d?approved=%s", bookingId, approved), userId, null);
     }
 
     public ResponseEntity<Object> addNew(long userId, BookingExtraDto bookingDto) {
-        correctnessOfBookingDatesValidator.validate(bookingDto);
-
         return post("", userId, bookingDto);
     }
 

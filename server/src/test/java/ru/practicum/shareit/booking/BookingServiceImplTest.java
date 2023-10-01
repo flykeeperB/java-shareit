@@ -56,8 +56,7 @@ public class BookingServiceImplTest {
 
     private final AvailabilityForBookingValidator availabilityForBookingValidator =
             new AvailabilityForBookingValidatorImpl();
-    private final CorrectnessOfBookingDatesValidator correctnessOfBookingDatesValidator =
-            new CorrectnessOfBookingDatesValidatorImpl();
+
     private final RelatedToBookedItemUserValidator relatedToBookedItemUserValidator =
             new RelatedToBookedItemUserValidatorImpl();
     private final OwnerOfBookedItemValidator ownerOfBookedItemValidator =
@@ -90,7 +89,6 @@ public class BookingServiceImplTest {
                 userMapper,
                 itemMapper,
                 availabilityForBookingValidator,
-                correctnessOfBookingDatesValidator,
                 relatedToBookedItemUserValidator,
                 ownerOfBookedItemValidator,
                 alreadyApprovedBookingValidator
@@ -163,7 +161,7 @@ public class BookingServiceImplTest {
 
     }
 
-    @Test
+    /*@Test
     public void createWithEqualsStartAndEndDatesTest() {
         Item testItem = testDataGenerator.generateItem();
         when(userRepository.findById(any())).thenReturn(Optional.of(testUser));
@@ -180,9 +178,9 @@ public class BookingServiceImplTest {
 
         assertThrows(ValidationException.class, () -> bookingService.create(testContext));
 
-    }
+    }*/
 
-    @Test
+    /*@Test
     public void createWithWrongDatesTest() {
         Item testItem = testDataGenerator.generateItem();
         when(userRepository.findById(any())).thenReturn(Optional.of(testUser));
@@ -199,9 +197,9 @@ public class BookingServiceImplTest {
 
         assertThrows(ValidationException.class, () -> bookingService.create(testContext));
 
-    }
+    }*/
 
-    @Test
+    /*@Test
     public void createWithWrongStartDateTest() {
         Item testItem = testDataGenerator.generateItem();
         when(userRepository.findById(any())).thenReturn(Optional.of(testUser));
@@ -218,7 +216,7 @@ public class BookingServiceImplTest {
 
         assertThrows(ValidationException.class, () -> bookingService.create(testContext));
 
-    }
+    }*/
 
     @Test
     public void retrieveTest() {

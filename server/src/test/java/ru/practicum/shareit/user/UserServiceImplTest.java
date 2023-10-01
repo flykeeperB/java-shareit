@@ -18,9 +18,7 @@ import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.user.service.impl.UserServiceImpl;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.validators.UserNotBlankNameValidator;
 import ru.practicum.shareit.user.validators.UserNullityValidator;
-import ru.practicum.shareit.user.validators.impl.UserNotBlankNameValidatorImpl;
 import ru.practicum.shareit.user.validators.impl.UserNullityValidatorImpl;
 
 import java.util.List;
@@ -42,7 +40,6 @@ class UserServiceImplTest {
     private UserMapper userMapper;
 
     private UserNullityValidator userNullityValidator;
-    private UserNotBlankNameValidator userNotBlankNameValidator;
 
     private User testSourceUser;
     private UserDto testSourceUserDto;
@@ -53,12 +50,10 @@ class UserServiceImplTest {
         userMapper = new UserMapperImpl();
 
         userNullityValidator = new UserNullityValidatorImpl();
-        userNotBlankNameValidator = new UserNotBlankNameValidatorImpl();
 
         userService = new UserServiceImpl(userRepository,
                 userMapper,
-                userNullityValidator,
-                userNotBlankNameValidator
+                userNullityValidator
         );
 
         testSourceUser = new User(1L, "alice", "alice@yandex.ru");
@@ -83,7 +78,7 @@ class UserServiceImplTest {
                 .save(any(User.class));
     }
 
-    @Test
+    /*@Test
     public void createWithBlankUserNameTest() {
 
         testSourceUserDto.setName("");
@@ -94,7 +89,7 @@ class UserServiceImplTest {
         Throwable thrown = assertThrows(ValidationException.class, () -> userService.create(testContext));
 
         assertNotNull(thrown.getMessage());
-    }
+    }*/
 
     @Test
     public void retrieveTest() {

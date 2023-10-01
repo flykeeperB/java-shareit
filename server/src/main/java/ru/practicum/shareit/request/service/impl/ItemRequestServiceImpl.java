@@ -22,7 +22,6 @@ import ru.practicum.shareit.request.mapping.*;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.request.service.ItemRequestService;
-import ru.practicum.shareit.request.validators.NotBlankDescriptionOfItemRequestValidator;
 import ru.practicum.shareit.user.mapping.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
@@ -46,8 +45,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     private final UserMapper userMapper;
     private final ItemMapper itemMapper;
 
-    private final NotBlankDescriptionOfItemRequestValidator notBlankDescriptionOfItemRequestValidator;
-
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
@@ -55,8 +52,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         log.info("создание запроса о предоставлении вещи");
 
         User sharerUser = retrieveUser(context.getSharerUserId());
-
-        notBlankDescriptionOfItemRequestValidator.validate(context.getItemRequestDto());
 
         ItemRequest itemRequest = repository.save(itemRequestMapper
                 .mapToItemRequest(context.getItemRequestDto(), sharerUser));

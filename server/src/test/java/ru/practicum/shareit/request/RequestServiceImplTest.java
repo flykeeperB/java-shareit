@@ -25,8 +25,6 @@ import ru.practicum.shareit.request.mapping.impl.ItemRequestMapperImpl;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.request.service.impl.ItemRequestServiceImpl;
-import ru.practicum.shareit.request.validators.NotBlankDescriptionOfItemRequestValidator;
-import ru.practicum.shareit.request.validators.impl.NotBlankDescriptionOfItemRequestValidatorImpl;
 import ru.practicum.shareit.user.mapping.UserMapper;
 import ru.practicum.shareit.user.mapping.impl.UserMapperImpl;
 import ru.practicum.shareit.user.model.User;
@@ -69,15 +67,12 @@ public class RequestServiceImplTest {
         ItemRequestMapper itemRequestMapper = new ItemRequestMapperImpl();
         UserMapper userMapper = new UserMapperImpl();
 
-        NotBlankDescriptionOfItemRequestValidator notBlankDescriptionOfItemRequestValidator = new NotBlankDescriptionOfItemRequestValidatorImpl();
-
         itemRequestService = new ItemRequestServiceImpl(itemRequestRepository,
                 userRepository,
                 itemRepository,
                 itemRequestMapper,
                 userMapper,
-                itemMapper,
-                notBlankDescriptionOfItemRequestValidator
+                itemMapper
         );
 
         testUser = testDataGenerator.generateUser();
@@ -108,7 +103,7 @@ public class RequestServiceImplTest {
                 .save(any(ItemRequest.class));
     }
 
-    @Test
+    /*@Test
     public void createWithBlankDescriptionTest() {
 
         when(userRepository.findById(any())).thenReturn(Optional.of(testUser));
@@ -123,7 +118,7 @@ public class RequestServiceImplTest {
         assertThrows(ValidationException.class, () -> {
             itemRequestService.create(testContext);
         });
-    }
+    }*/
 
     @Test
     public void retrieveForUserTest() {

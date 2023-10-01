@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.*;
+import ru.practicum.shareit.booking.validators.CorrectnessOfBookingDatesValidator;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -19,11 +20,14 @@ import javax.validation.constraints.Min;
 @Validated
 public class BookingController {
     private final BookingClient bookingClient;
+    private final CorrectnessOfBookingDatesValidator correctnessOfBookingDatesValidator;
 
     @PostMapping
     public ResponseEntity<Object> create(@Valid @RequestBody BookingExtraDto bookingDto,
                                          @RequestHeader(name = "X-Sharer-User-Id") Long userId) {
         log.info("обработка запроса на создание записи о бронировании");
+
+        correctnessOfBookingDatesValidator.validate(bookingDto);
 
         return bookingClient.addNew(userId, bookingDto);
     }
